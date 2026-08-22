@@ -1,0 +1,36 @@
+# Publication du site statique sur GitHub Pages.
+#
+# Déclenchement manuel par défaut (Actions → Deploy to GitHub Pages → Run
+# workflow). Pour publier à chaque push, décommente le bloc `push:` ci-dessous
+# et vérifie que Settings → Pages → Source est réglé sur « GitHub Actions ».
+name: Deploy to GitHub Pages
+
+on:
+  workflow_dispatch:
+  # push:
+  #   branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      # Le site est déjà statique : on publie la racine du dépôt telle quelle.
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
