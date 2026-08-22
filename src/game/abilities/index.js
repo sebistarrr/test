@@ -6,7 +6,9 @@
  *   • `onDamage(f, amount, source, opts, game)` → dégâts restants après
  *     absorption (bouclier de la Lumière) ;
  *   • `onLand(f, target, hit, game)` → réaction à sa propre touche d'arme
- *     (la Foudre y plante une borne).
+ *     (la Foudre y plante une borne) ;
+ *   • `drawWeapon(ctx, f)` → rendu d'arme sur mesure, à la place du couple
+ *     manche + sprite (la liane courbe de la Plante).
  *
  * Ajouter un élément = ajouter sa fiche + son module ici.
  *
@@ -20,6 +22,7 @@ import { lightAbilities } from './light.js';
 import { windAbilities } from './wind.js';
 import { lightningAbilities } from './lightning.js';
 import { waterAbilities } from './water.js';
+import { plantAbilities } from './plant.js';
 
 const REGISTRY = {
   shadow: shadowAbilities,
@@ -29,6 +32,7 @@ const REGISTRY = {
   wind: windAbilities,
   lightning: lightningAbilities,
   water: waterAbilities,
+  plant: plantAbilities,
 };
 
 /** Module neutre : sert de repli pour un élément sans pouvoirs dédiés. */

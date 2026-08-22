@@ -143,8 +143,11 @@ function drawElementBadge(canvas, el) {
   ctx.strokeStyle = el.look.outline;
   ctx.stroke();
 
-  const map = PIXEL_MAPS[el.weapon.head.sprite];
-  const sprite = compilePixelMap(map, 3);
+  // certaines armes n'ont pas de sprite (liane courbe dessinée en tracé) :
+  // on retombe alors sur le projectile, puis sur l'icône de l'élément
+  const key =
+    el.weapon.head.sprite ?? Object.values(el.projectiles ?? {})[0]?.sprite ?? el.icon;
+  const sprite = compilePixelMap(PIXEL_MAPS[key], 3);
   // la tête d'arme est cadrée dans la place restante, ratio conservé
   const availW = canvas.width - (cx + r * 0.6);
   const availH = canvas.height * 0.62;

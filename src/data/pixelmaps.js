@@ -473,6 +473,81 @@ export const ICON_DROPLET = deepFreeze({
   ],
 });
 
+/* ------------------------------------------------------------------
+ * PLANTE — bulbe semé dans l'arène, fleur projectile, icône du titre
+ * Relevé : vidéos PLANT vs FIRE / ICE vs PLANT / DARK vs PLANT.
+ * (La liane, elle, est dessinée en courbe par game/abilities/plant.js.)
+ * ------------------------------------------------------------------ */
+export const PLANT_BULB = deepFreeze({
+  w: 9,
+  h: 11,
+  palette: {
+    K: '#4a6b4a', // contour vert-gris
+    b: '#cfe8bf', // bulbe pâle
+    l: '#8fce7a', // feuilles
+    w: '#eef7e6', // reflet
+  },
+  rows: [
+    '..K...K..',
+    '.KlK.KlK.',
+    '.KllKllK.',
+    '..KlllK..',
+    '...KlK...',
+    '..KbbbK..',
+    '.KbwwbbK.',
+    'KbwwbbbbK',
+    'KbwbbbbbK',
+    '.KbbbbbK.',
+    '..KKKKK..',
+  ],
+});
+
+export const FLOWER = deepFreeze({
+  w: 9,
+  h: 9,
+  palette: {
+    K: '#a3316b',
+    p: '#f472b6', // pétale
+    P: '#ec4899', // pétale sombre
+    y: '#fde047', // cœur
+  },
+  rows: [
+    '..KK.KK..',
+    '.KppKppK.',
+    'KpppppppK',
+    'KppPyPppK',
+    'KppyyyppK',
+    'KppPyPppK',
+    'KpppppppK',
+    '.KppKppK.',
+    '..KK.KK..',
+  ],
+});
+
+export const ICON_LEAF = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#14532d', l: '#4ade80', g: '#22c55e' },
+  rows: [
+    '.........KKK....',
+    '.......KKlllK...',
+    '......KlllllK...',
+    '.....KllllllK...',
+    '..KKKllllllKK...',
+    '.KlllllllKK.....',
+    'KlllllKK..g.....',
+    '.KlllKK...g.....',
+    '..KKK.....g.....',
+    '..........g.....',
+    '.......KKgggKK..',
+    '......KgggggggK.',
+    '......KgggggggK.',
+    '.......KKgggKK..',
+    '.........KKK....',
+    '................',
+  ],
+});
+
 /** Table des sprites : clé → description. Les clés servent aux overrides PNG. */
 export const PIXEL_MAPS = deepFreeze({
   // Ombre & Glace
@@ -492,10 +567,14 @@ export const PIXEL_MAPS = deepFreeze({
   windCrescent: WIND_CRESCENT,
   waterDrop: WATER_DROP,
   teslaNode: TESLA_NODE,
+  // plante
+  plantBulb: PLANT_BULB,
+  flower: FLOWER,
   // icônes
   iconFlame: ICON_FLAME,
   iconShield: ICON_SHIELD,
   iconTornado: ICON_TORNADO,
   iconBolt: ICON_BOLT,
   iconDroplet: ICON_DROPLET,
+  iconLeaf: ICON_LEAF,
 });

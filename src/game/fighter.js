@@ -84,6 +84,8 @@ export class Fighter {
     /** @type {Fighter|null} */
     this.opponent = null;
     this.state = {}; // bac à sable pour les modules de pouvoirs
+    /** @type {((ctx:CanvasRenderingContext2D)=>void)|null} */
+    this.customWeapon = null;
   }
 
   get radius() {
@@ -242,7 +244,9 @@ export class Fighter {
       ctx.fill();
     }
 
-    this.drawWeapon(ctx);
+    // un module de pouvoirs peut fournir son propre rendu d'arme
+    if (this.customWeapon) this.customWeapon(ctx);
+    else this.drawWeapon(ctx);
 
     // corps — la teinte d'un contrôle adverse prime sur la couleur d'élément,
     // le flash blanc d'encaissement prime sur tout

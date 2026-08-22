@@ -5,7 +5,7 @@ Clone haute fidélité des duels d'éléments de la chaîne de référence
 **Canvas 2D**. Aucune dépendance, aucun build : le dépôt se publie tel quel sur
 GitHub Pages.
 
-**Sept éléments jouables**, chacun relevé sur sa propre vidéo :
+**Huit éléments jouables**, chacun relevé sur sa propre vidéo :
 
 | Élément | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
@@ -16,10 +16,11 @@ GitHub Pages.
 | **Lumière** | Marteau d'aube | bouclier qui riposte, recul énorme | Piège radiant (trait doré) |
 | **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
 | **Vent** | Shuriken de bourrasque | le plus rapide, tornades | Salve de tempête |
+| **Plante** | Liane fouettante | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs |
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
 
 ---
 
@@ -46,7 +47,7 @@ empêche Jekyll d'ignorer les dossiers.
 
 | Paramètre    | Effet                                                             |
 | ------------ | ----------------------------------------------------------------- |
-| `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind` |
+| `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind`, `plant` |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | HUD en français (par défaut : libellés anglais de la vidéo)        |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
@@ -98,7 +99,8 @@ src/
 │       ├── light.js       Égide (bouclier/riposte) + Piège radiant
 │       ├── wind.js        Tornade + Salve de tempête
 │       ├── lightning.js   Bornes statiques + Surcharge
-│       └── water.js       Tourbillon + Maelström
+│       ├── water.js       Tourbillon + Maelström
+│       └── plant.js       Semis (dégâts/soin) + Tempête de fleurs
 └── ui/
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
@@ -162,9 +164,11 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Progression « Tornado Damage » / « Cooldown » | 10 → 22 (+2) / 4 s → 1 s (−0,5 s) |
 | Progression « Chain Damage »  | 1 → 4,5 par pas de 0,5            |
 | Progression « Whirlpool Damage » / « Size » | 1 → 7 / 70 → 100    |
+| Progression « Bulb Damage/Heal » | 1 → 8 (+1 par touche)        |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
-**28 affrontements possibles** (3 seeds chacun), un duel dure **21 à 55 s**,
+**36 affrontements possibles** (3 seeds chacun), un duel dure **21 à 79 s**
+(41 s en moyenne),
 la Glace finit à 12-13 piles et l'Ombre atteint son plancher de 0,7 s. Une
 **mort subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne
 s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).

@@ -52,7 +52,12 @@ export class Match {
       [this.a, abilitiesFor(elA.id)],
       [this.b, abilitiesFor(elB.id)],
     ]);
-    for (const [f, mod] of this.modules) mod.init(f, this);
+    for (const [f, mod] of this.modules) {
+      mod.init(f, this);
+      // un module peut prendre la main sur le rendu de son arme
+      // (la liane courbe de la Plante n'est pas un sprite droit)
+      if (mod.drawWeapon) f.customWeapon = (ctx) => mod.drawWeapon(ctx, f);
+    }
 
     this.backdrop = buildBackdrop({ a: elA, b: elB, lang });
 
@@ -259,6 +264,26 @@ export class Match {
     const sd = MATCH.suddenDeath;
     if (this.time <= sd.after) return 1;
     return Math.min(sd.max, 1 + (this.time - sd.after) / sd.ramp);
+  }
+
+  /**
+   * Soin — pendant du point d'entrée unique des dégâts. Plafonné aux PV de
+   * départ, et sans effet une fois le duel terminé.
+   */
+  heal(target, amount, source) {
+    if (!target.alive || this.phase === 'over') return 0;
+    const before = target.hp;
+    target.hp = Math.min(MATCH.maxHp, target.hp + Math.max(0, amount));
+    const healed = target.hp - before;
+    if (healed > 0) {
+      this.fx.burst(target.x, target.y, 8, {
+        color: [source?.el?.accent ?? '#4ade80', '#bbf7d0', '#ffffff'],
+        speed: 150,
+        size: 5,
+        life: 0.55,
+      });
+    }
+    return healed;
   }
 
   knockout(loser, winner) {

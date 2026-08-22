@@ -122,7 +122,7 @@ export const fireAbilities = {
       game.damage(target, ult.aura.tickDamage, f, { kind: 'aura', silent: true });
       target.applyDot(
         {
-          damage: Math.max(1, Math.round(f.stacks / 3)),
+          damage: Math.max(1, Math.round(f.stacks / 2.4)),
           interval: 1,
           duration: f.stacks,
           source: f,

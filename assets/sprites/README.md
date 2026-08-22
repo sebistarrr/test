@@ -22,6 +22,8 @@ Tu peux remplacer n'importe lequel par un PNG, sans toucher au code du moteur.
 | `windCrescent`     | lame d'air (projectile)                 | 36 × 42 px        | pointe vers la droite     |
 | `waterDrop`        | goutte (projectile)                     | 24 × 32 px        | pointe vers la droite     |
 | `teslaNode`        | borne statique de la Foudre             | 36 × 44 px        | —                         |
+| `plantBulb`        | bulbe semé par la Plante                | 32 × 40 px        | —                         |
+| `flower`           | fleur (projectile)                      | 28 × 28 px        | —                         |
 | `orbDark`          | icône du titre (Ombre)                  | 64 × 64 px        | —                         |
 | `snowflake`        | icône du titre (Glace)                  | 64 × 64 px        | —                         |
 | `iconFlame`        | icône du titre (Feu)                    | 64 × 64 px        | —                         |
@@ -29,6 +31,7 @@ Tu peux remplacer n'importe lequel par un PNG, sans toucher au code du moteur.
 | `iconTornado`      | icône du titre (Vent)                   | 64 × 64 px        | —                         |
 | `iconBolt`         | icône du titre (Foudre)                 | 64 × 64 px        | —                         |
 | `iconDroplet`      | icône du titre (Eau)                    | 64 × 64 px        | —                         |
+| `iconLeaf`         | icône du titre (Plante)                 | 64 × 64 px        | —                         |
 
 Règles :
 
@@ -81,7 +84,15 @@ weapon: {
 La zone qui blesse est décrite juste en dessous (`hitbox.from/to/radius`) et
 peut être visualisée avec `?debug=1`.
 
-## 5. Corps des combattants
+## 5. Une arme sans sprite : la liane
+
+La Plante fait exception : sa liane est **courbe**, donc dessinée en tracé par
+`src/game/abilities/plant.js` (`drawWeapon`) plutôt qu'en sprite droit. Ses
+dimensions se règlent dans `weapon.vine` de sa fiche (longueur, ouverture de
+l'arc, épaisseur, teintes). Tout module de pouvoirs peut faire de même en
+exposant un `drawWeapon(ctx, f)`.
+
+## 6. Corps des combattants
 
 Les boules ne sont pas des sprites : ce sont des cercles vectoriels (couleur,
 contour, rayon) définis dans `look` de chaque fiche. Pour un corps en sprite,

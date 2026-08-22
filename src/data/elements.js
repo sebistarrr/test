@@ -128,7 +128,7 @@ const SHADOW = {
     barFill: '#870286',
     barText: '#f3e8ff',
     /** Charge : +chargeRate/s et +chargeOnHit par touche portée. */
-    chargeRate: 4, // calé : ~2 incantations sur un duel d'une minute
+    chargeRate: 4.5, // calé : ~2 incantations sur un duel d'une minute
     chargeOnHit: 2,
     duration: 6.5, // mesuré : dôme actif ~6 s
     dome: {
@@ -362,7 +362,7 @@ const FIRE = {
     head: { sprite: 'fireBlade', scale: 4, anchorY: 0.5 },
     hitbox: { from: 0.5, to: 1, radius: 16 },
     melee: {
-      damage: 4,
+      damage: 5,
       cooldown: 1.15,
       knockback: 240,
       selfRecoil: 85,
@@ -371,7 +371,7 @@ const FIRE = {
         stackGain: 0.5,
         stackMax: 12,
         dot: {
-          damage: (self) => Math.max(1, Math.round(self.stacks / 3)),
+          damage: (self) => Math.max(1, Math.round(self.stacks / 2.4)),
           interval: 1,
           duration: (self) => self.stacks, // la stat sert aussi de durée
           ring: '#f97316', // cerclage orange sur la victime (observé)
@@ -416,7 +416,7 @@ const FIRE = {
       sprite: 'ember',
       scale: 3,
       speed: 520,
-      damage: 3,
+      damage: 4,
       radius: 11,
       life: 1.3,
       bounces: 0,
@@ -627,7 +627,7 @@ const WIND = {
       radius: 115,
       duration: 2.2,
       pull: 80,
-      tickInterval: 0.8,
+      tickInterval: 0.7,
       /** « Tornado Damage » du HUD, ramené à l'échelle des PV. */
       tickDamage: (self) => Math.max(1, Math.round(self.stacks / 18)),
       damageGain: 2, // mesuré : 10 → 22 par pas de 2
@@ -923,6 +923,156 @@ const WATER = {
   },
 };
 
+/* ==========================================================================
+ *  PLANTE  (PLANT)
+ *  Relevé : vidéos « PLANT vs FIRE », « ICE vs PLANT », « DARK vs PLANT »
+ *  et « WIND vs PLANT ».
+ * ========================================================================== */
+const PLANT = {
+  id: 'plant',
+  name: 'PLANTE',
+  nameRef: 'PLANT',
+  tagline: 'Endurance — sème des bulbes qui blessent l’un et soignent l’autre',
+  icon: 'iconLeaf',
+
+  look: {
+    radius: 41,
+    body: '#15c701', // pipette : rgb(21,199,1)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(34,197,94,0.45)',
+      radius: 1.65,
+      pulse: 1.5,
+      showWhen: 'ultimate-ready',
+    },
+    trail: { color: 'rgba(74,222,128,0.26)', every: 0.05, life: 0.28 },
+    accent: '#22c55e',
+  },
+
+  movement: { speed: 445, turnRate: 1.7, seek: 0.45, mass: 1 },
+
+  /**
+   * La liane est **courbe** : elle n'est pas un sprite mais un tracé, dessiné
+   * par game/abilities/plant.js (`drawWeapon`). Le reste de la fiche décrit
+   * quand même sa géométrie, dont se sert la détection de touche.
+   */
+  weapon: {
+    name: 'Liane fouettante',
+    reach: 160, // mesuré : ~164 px
+    spin: SPIN,
+    spinDir: 1,
+    handle: { length: 52, width: 10, color: '#7a5a2a', dark: '#4a3418', outline: '#241a0c', gem: null },
+    head: { sprite: null, scale: 1, anchorY: 0.5 },
+    /** Tracé de la liane : arc de cercle, épaisseur et teintes. */
+    vine: {
+      length: 118, // longueur développée de la courbe
+      curve: 0.95, // ouverture de l'arc, en radians
+      width: 19,
+      outline: '#0d1f0a',
+      body: '#3aa03a',
+      light: '#7fdc6a',
+      tip: '#a7f08a',
+    },
+    hitbox: { from: 0.42, to: 1, radius: 22 },
+    melee: {
+      damage: 3,
+      cooldown: 1.15,
+      knockback: 235,
+      selfRecoil: 80,
+      onHit: {
+        stackGain: 1, // « Bulb Damage/Heal » : 1 → 8 mesuré
+        stackMax: 14,
+      },
+    },
+  },
+
+  /** Bulbes semés dans l'arène : mine pour l'adversaire, soin pour la Plante. */
+  ability: {
+    id: 'bulb',
+    name: 'Semis',
+    nameRef: 'Bulb',
+    cooldown: 5,
+    cooldownStep: 0,
+    cooldownFloor: 5,
+    bulb: {
+      max: 4,
+      life: 18,
+      sprite: 'plantBulb',
+      scale: 3.4,
+      /** Rayon de déclenchement (pour les deux camps). */
+      radius: 36,
+      /**
+       * Délai d'amorçage : sans lui, la Plante ramasserait son propre bulbe
+       * à l'instant où elle le pose. Le temps qu'il germe, elle est repartie.
+       */
+      armDelay: 0.9,
+      /** Une fois mûr, le bulbe tire une fleur sur l'adversaire. */
+      shootInterval: 2.2,
+      shootRange: 460,
+      projectile: 'flower',
+      /** Dégâts à l'adversaire et soin à la Plante : la stat du HUD. */
+      damage: (self) => Math.max(1, Math.round(self.stacks)),
+      heal: (self) => Math.max(1, Math.round(self.stacks * 0.8)),
+      slow: 0.25,
+      slowDuration: 1.6,
+    },
+  },
+
+  ultimate: {
+    id: 'flowerStorm',
+    name: 'Tempête de fleurs',
+    nameRef: 'FLOWER STORM',
+    barLabel: 'FLOWER STORM',
+    barLabelFr: 'TEMPÊTE DE FLEURS',
+    barFill: '#22c55e',
+    barText: '#052e16',
+    chargeRate: 4,
+    chargeOnHit: 3,
+    duration: 5,
+    storm: {
+      /** Cerceau de lianes qui enferme la cible (observé). */
+      cage: { color: '#1f5c22', stud: '#7bd45a', width: 7, studs: 8, scale: 1.35, spin: 0.9 },
+      /** Nuée de pétales roses en cubes. */
+      petals: { rate: 60, size: 11, speed: 210, life: 1, colors: ['#f9a8d4', '#f472b6', '#ec4899', '#fbcfe8'] },
+      root: 0.7, // la cible est quasiment clouée sur place
+      tickInterval: 0.7,
+      tickDamage: (self) => Math.max(1, Math.round(self.stacks / 4)),
+      /** La Plante se régénère pendant sa tempête. */
+      healInterval: 1,
+      healAmount: 1,
+    },
+  },
+
+  projectiles: {
+    flower: {
+      label: 'Fleur',
+      sprite: 'flower',
+      scale: 3,
+      speed: 340,
+      damage: 2,
+      radius: 12,
+      life: 2.4,
+      bounces: 0,
+      knockback: 60,
+      trail: { color: 'rgba(244,114,182,0.45)', every: 0.04, life: 0.4 },
+    },
+  },
+
+  progression: { stack: 1, stack2: 0 },
+
+  hud: {
+    stats: [(f) => `Bulb Damage/Heal: ${Math.round(f.stacks)}`],
+    statsFr: [(f) => `Bulbe — dégâts/soin : ${Math.round(f.stacks)}`],
+    color: '#16a02c',
+    stroke: '#0a0a0a',
+  },
+};
+
 /** Formatage « 3s » / « 2.4s » identique à la vidéo. */
 function formatSeconds(v) {
   const r = Math.round(v * 10) / 10;
@@ -943,10 +1093,20 @@ export const ELEMENTS = deepFreeze({
   wind: WIND,
   lightning: LIGHTNING,
   water: WATER,
+  plant: PLANT,
 });
 
 /** Ordre d'affichage dans l'écran de sélection. */
-export const ROSTER = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind']);
+export const ROSTER = deepFreeze([
+  'shadow',
+  'ice',
+  'fire',
+  'water',
+  'light',
+  'lightning',
+  'wind',
+  'plant',
+]);
 
 /** @param {string} id */
 export function getElement(id) {

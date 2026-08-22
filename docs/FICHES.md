@@ -1,7 +1,7 @@
 # Fiches d'éléments
 
-Sept éléments : **Ombre**, **Glace**, **Feu**, **Eau**, **Lumière**, **Foudre**,
-**Vent**. Ces fiches sont la **transcription lisible** de `src/data/elements.js`. Le code
+Huit éléments : **Ombre**, **Glace**, **Feu**, **Eau**, **Lumière**, **Foudre**,
+**Vent**, **Plante**. Ces fiches sont la **transcription lisible** de `src/data/elements.js`. Le code
 est la source de vérité : toute valeur ci-dessous existe telle quelle dans la
 fiche gelée correspondante.
 
@@ -14,10 +14,13 @@ fiche gelée correspondante.
   | `LIGHT vs DARK` | Lumière, Ombre | 576 × 1024, 73,0 s |
   | `LIGHT vs LIGHTNING` | Lumière, Foudre | 576 × 1024, 61,2 s |
   | `FIRE vs WATER` | Feu, Eau | 576 × 1024, 64,4 s |
-  | `WIND vs PLANT` | Vent | 576 × 1024, 80,6 s |
+  | `WIND vs PLANT` | Vent, Plante | 576 × 1024, 80,6 s |
+  | `PLANT vs FIRE` | Plante | 576 × 1024, 62,2 s |
+  | `ICE vs PLANT` | Plante | 576 × 1024, 93,7 s |
+  | `DARK vs PLANT` | Plante | 576 × 1024, 99,0 s |
 
-  Les quatre dernières sont en 576 × 1024, soit exactement 0,8 × le format de
-  la première : mêmes proportions d'arène, valeurs converties par ×1,25.
+  Toutes sauf la première sont en 576 × 1024, soit exactement 0,8 × son format :
+  mêmes proportions d'arène, valeurs converties par ×1,25.
 - `calé` = ajusté par simulation pour retrouver le rythme observé
   (durée de duel, progression des deux compteurs du HUD).
 
@@ -83,7 +86,7 @@ pas déteindre sur le suivant.
 
 | Propriété          | Valeur                                             | Source |
 | ------------------ | -------------------------------------------------- | ------ |
-| Jauge              | +4 %/s, +2 % par touche portée                     | calé   |
+| Jauge              | +4,5 %/s, +2 % par touche portée                   | calé   |
 | Durée              | 6,5 s (la jauge se vide pendant l'incantation)     | mesuré |
 | Dôme               | rayon 270 px, **figé** au point d'incantation, `rgba(30,24,45,.88)` | mesuré |
 | Poussière          | 120 particules violettes en dérive dans le dôme    | mesuré |
@@ -190,12 +193,12 @@ début et létale à la fin.
 | Halo | orange, visible quand la Rage est chargée | mesuré |
 | Déplacement | 480 px/s, virage 1,95 rad/s, pilotage 0,42 | calé |
 | Arme | *Lame ardente* — portée 150 px, manche sombre 78 px + sprite `fireBlade` ×4 (72 × 40 px) | mesuré |
-| Corps à corps | 4 PV / 1,15 s, recul 240 | calé |
-| **Effet à la touche** | **brûlure** : la pile monte de 0,5 (1 → 5,5 mesuré) ; le DoT inflige `pile/3` PV par seconde pendant `pile` secondes | mesuré |
+| Corps à corps | 5 PV / 1,15 s, recul 240 | calé |
+| **Effet à la touche** | **brûlure** : la pile monte de 0,5 (1 → 5,5 mesuré) ; le DoT inflige `pile/2,4` PV par seconde pendant `pile` secondes | mesuré |
 | Marquage visuel | **anneau orange** autour de la victime pendant la brûlure | mesuré |
 | Pouvoir | *Gerbe de braises* — 3 braises, dispersion ±0,55 rad, toutes les 3,6 s | calé |
 | Ultime | *Rage infernale* (`INFERNAL RAGE`), 6 s : nova de **90 cubes orange**, ailes de flammes battantes, aura brûlante de 150 px (2 PV / 0,6 s + brûlure), vitesse ×1,2 | mesuré |
-| Projectile | *Braise* — `ember` ×3, 520 px/s, 3 PV, embrase 2 s | calé |
+| Projectile | *Braise* — `ember` ×3, 520 px/s, 4 PV, embrase 2 s | calé |
 | HUD | `Burn Damage/Duration: N` | mesuré |
 
 La statistique fait **à la fois** les dégâts et la durée du DoT — c'est
@@ -234,7 +237,7 @@ littéralement ce qu'annonce son libellé dans la vidéo.
 | Arme | *Shuriken de bourrasque* — portée 105 px (arme collée au corps), manche 45 px + sprite `windShuriken` ×4,6 (60 × 60 px) | mesuré |
 | Rotation d'arme | 6,34 rad/s (× 1,1 par rapport au reste du roster) | mesuré |
 | Corps à corps | 2 PV / 1 s (la cadence la plus rapide), ralentit de 12 % | calé |
-| Pouvoir | *Tornade* — vortex de 115 px posé **sur l'adversaire**, 2,2 s, aspiration 80, `stat/18` PV toutes les 0,8 s | calé |
+| Pouvoir | *Tornade* — vortex de 115 px posé **sur l'adversaire**, 2,2 s, aspiration 80, `stat/18` PV toutes les 0,7 s | calé |
 | **Double progression** | chaque tornade : dégâts +2 (10 → 24, plafond) **et** recharge −0,5 s (4 s → 1 s) | mesuré |
 | Ultime | *Salve de tempête* (`TEMPEST VOLLEY`), 4,5 s : 2 croissants toutes les 0,7 s + vitesse ×1,25 | mesuré |
 | Projectile | *Lame d'air* — `windCrescent` ×3, 430 px/s, 1 PV, 1 rebond | mesuré |
@@ -279,19 +282,48 @@ littéralement ce qu'annonce son libellé dans la vidéo.
 
 ---
 
+## 🌱 PLANTE — `plant` (affiché « PLANT »)
+
+> Endurance — sème des bulbes qui blessent l'un et soignent l'autre.
+
+| Bloc | Valeur | Source |
+| --- | --- | --- |
+| Corps | rayon 41 px, `#15c701`, contour noir 5 px | mesuré |
+| Déplacement | 445 px/s, virage 1,7 rad/s | calé |
+| **Arme** | *Liane fouettante* — portée 160 px. **Seule arme courbe du roster** : un arc de 118 px d'ouverture 0,95 rad, épaisseur 19 px, bourgeon au bout, dessiné en tracé et non en sprite | mesuré |
+| Corps à corps | 3 PV / 1,15 s, recul 235 ; pile +1 | calé |
+| **Bulbes** | semés toutes les 5 s à l'endroit courant, 4 au plus, durée 18 s, rayon 36 px, **amorçage 0,9 s** (sinon la Plante ramasserait le sien aussitôt posé) | mesuré + calé |
+| **Mine** | l'adversaire qui frôle un bulbe prend la stat en PV et est ralenti de 25 % pendant 1,6 s | mesuré |
+| **Soin** | la Plante qui récupère son bulbe **regagne `stat × 0,6` PV** — le seul élément du roster capable de remonter ses PV | mesuré |
+| Tir des bulbes | un bulbe mûr tire une fleur sur l'adversaire toutes les 2,2 s, portée 460 px | mesuré |
+| Ultime | *Tempête de fleurs* (`FLOWER STORM`), 5 s : la cible est enfermée dans un **cerceau de lianes à nœuds clairs**, clouée sur place (−70 %), battue par une nuée de pétales roses (`stat/4` PV toutes les 0,7 s), pendant que la Plante regagne 1 PV/s | mesuré |
+| Projectile | *Fleur* — `flower` ×3, 340 px/s, 2 PV, traînée rose | mesuré |
+| HUD | `Bulb Damage/Heal: N` (1 → 8 mesuré) | mesuré |
+
+Le libellé du HUD dit tout : la **même** statistique sert de dégâts à
+l'adversaire et de soin à la Plante.
+
+---
+
 ## Équilibrage du roster
 
-Vérifié par simulation sans rendu sur les **28 affrontements** possibles
-(7 × 7 avec miroirs), 3 seeds chacun :
+Vérifié par simulation sans rendu sur les **36 affrontements** possibles
+(8 × 8 avec miroirs), 3 seeds chacun :
 
-- durée typique : **21 à 55 s** ; le miroir Lumière contre Lumière, deux
-  boucliers face à face, monte à ~78 s ;
+- durée : **21 à 79 s**, moyenne **41 s** ; les profils défensifs allongent la
+  partie (miroir Lumière ~78 s) ;
 - chaque élément gagne des affrontements et en perd : Lumière, Foudre et Eau
-  dominent légèrement, Feu et Vent sont plus situationnels, et le trio
+  dominent légèrement, Feu et Vent sont plus situationnels, la Plante tient le
+  milieu de tableau grâce à sa régénération, et le trio
   Eau > Lumière > Foudre > Eau boucle en pierre-feuille-ciseaux ;
 - **mort subite** : au-delà de 55 s, tous les dégâts sont multipliés par
   `1 + (t − 55) / 18` (plafond ×4). Aucun duel ne peut s'éterniser, quels que
-  soient les deux éléments choisis.
+  soient les deux éléments choisis — aucun des 36 affrontements n'atteint la
+  limite de simulation ;
+- répartition des victoires sur les 21 duels hors miroir de chaque élément :
+  Eau 16, Lumière 15, Glace 11, Vent 11, Foudre 10, Plante 10, Feu 7, Ombre 4.
+  Le classement bouge à chaque retouche : le banc d'essai (`matrix`) sert
+  justement à le vérifier après chaque changement de fiche.
 
 Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 `index.html?a=…&b=…&seed=…`.
@@ -312,6 +344,8 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Mort subite               | dégâts ×`1 + (t − 55)/18`, plafonné à ×4                   |
 | Dégâts sur la durée       | un DoT par source, rafraîchi à chaque nouvelle application |
 | Absorption                | le module de la cible peut absorber avant les PV (bouclier) |
+| Soin                      | `Match.heal()`, plafonné aux 100 PV de départ              |
+| Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
 
 ## Comment les mesures ont été prises
 
@@ -324,7 +358,7 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 6. lecture des compteurs du HUD au fil de chaque duel pour caler les
    progressions : `3 s → 0,7 s` et `1 → 13` (Ombre/Glace), `1 → 5,5` (Feu),
    `1 → 14` et `1500 → 5400` (Lumière), `10 → 22` et `4 s → 1 s` (Vent),
-   `1 → 4,5` (Foudre), `1 → 7` et `70 → 100` (Eau).
+   `1 → 4,5` (Foudre), `1 → 7` et `70 → 100` (Eau), `1 → 8` (Plante).
 
 Pour rejouer une mesure : `index.html?seed=6&debug=1` affiche vitesses, charges
 et hitboxes en direct.
