@@ -17,6 +17,9 @@ fiche gelée correspondante.
   | `LIGHT vs PLANT` | Lumière, Plante | 576 × 1024, 114,6 s |
   | `FIRE vs WATER` | Feu, Eau | 576 × 1024, 64,4 s |
   | `WIND vs PLANT` | Vent, Plante | 576 × 1024, 80,6 s |
+  | `WIND vs LIGHT` | Vent | 576 × 1024, 68,7 s |
+  | `WIND vs LIGHTNING` | Vent | 576 × 1024, 46,9 s |
+  | `WIND vs WATER` | Vent | 576 × 1024, 63,1 s |
   | `PLANT vs FIRE` | Plante | 576 × 1024, 62,2 s |
   | `ICE vs PLANT` | Plante | 576 × 1024, 93,7 s |
   | `DARK vs PLANT` | Plante | 576 × 1024, 99,0 s |
@@ -261,12 +264,36 @@ bleuté posé sur son jaune. Cette teinte d'état est désormais générique :
 | Déplacement | **500 px/s**, virage 2,2 rad/s — le plus mobile du roster | mesuré |
 | Arme | *Shuriken de bourrasque* — portée 105 px (arme collée au corps), manche 45 px + sprite `windShuriken` ×4,6 (60 × 60 px) | mesuré |
 | Rotation d'arme | 6,34 rad/s (× 1,1 par rapport au reste du roster) | mesuré |
-| Corps à corps | 2 PV / 1 s (la cadence la plus rapide), ralentit de 12 % | calé |
-| Pouvoir | *Tornade* — vortex de 115 px posé **sur l'adversaire**, 2,2 s, aspiration 80, `stat/18` PV toutes les 0,7 s | calé |
-| **Double progression** | chaque tornade : dégâts +2 (10 → 24, plafond) **et** recharge −0,5 s (4 s → 1 s) | mesuré |
-| Ultime | *Salve de tempête* (`TEMPEST VOLLEY`), 4,5 s : 2 croissants toutes les 0,7 s + vitesse ×1,25 | mesuré |
-| Projectile | *Lame d'air* — `windCrescent` ×3, 430 px/s, 1 PV, 1 rebond | mesuré |
+| Corps à corps | 3 PV / 1 s (la cadence la plus rapide), ralentit de 12 % | calé |
+| **Tornade** | **rafale de 0,2 s, rayon 125 px, centrée sur le Vent lui-même** — pas un vortex lancé au loin ni une zone qui dure | mesuré |
+| Effet de la rafale | `stat / 2` PV et une projection de 430 à qui se trouve dedans | calé |
+| Cadence | part sur 4 s et **s'accélère à chaque rafale** (−0,15 s), jusqu'à un plancher de 0,5 s | mesuré |
+| **Double progression** | une rafale **qui touche** : dégâts +2 (10 → 24, plafond) **et** recharge −0,5 s de plus | mesuré |
+| Ultime | *Salve de tempête* (`TEMPEST VOLLEY`) : jauge pleine toutes les ~9 s, puis décharge **courte et dense** de 1,5 s (2 croissants toutes les 0,3 s) + vitesse ×1,25 | mesuré |
+| Projectile | *Lame d'air* — `windCrescent` ×3, 430 px/s, 3 PV, 1 rebond | mesuré |
 | HUD | `Tornado Damage: N` **et** `Cooldown: X.Xs` (deux lignes) | mesuré |
+
+### Comment la tornade a été établie
+
+Détection automatique image par image sur trois duels (`WIND vs LIGHT`,
+`WIND vs LIGHTNING`, `WIND vs PLANT`), en isolant les pixels bruns du
+tourbillon puis en comparant son centre à celui des deux combattants :
+
+1. **Durée** — 4 à 6 images à chaque fois, soit 0,13 à 0,20 s. Ce n'est pas
+   une zone qui persiste : c'est une rafale.
+2. **Position** — sur 18 déclenchements, le centre du tourbillon est à moins
+   de 30 px du Vent (souvent moins de 10). Il l'invoque autour de lui.
+3. **Cadence** — les intervalles mesurés descendent régulièrement :
+   4,8 · 4,1 · 4,2 · 3,4 · 2,7 · 2,4 · 2,1 · 1,9 · 2,2 · 2,1 · 1,9 · 1,7 ·
+   1,3 · 1,4 · 1,4 · 1,5 s. Deux vidéos donnent la même courbe.
+4. **Progression** — 17 rafales pour seulement 7 avancées du couple affiché
+   (10/4 s → 24/0,5 s, par pas de +2 / −0,5). Les incantations qui ne
+   rapportent rien sont celles où l'adversaire était loin : ce sont donc les
+   rafales **qui touchent** qui font progresser.
+
+Ces deux rythmes distincts — la cadence qui s'accélère à chaque rafale, le
+couple affiché qui n'avance qu'aux rafales réussies — sont reproduits par deux
+décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 
 ---
 
@@ -346,7 +373,7 @@ Vérifié par simulation sans rendu sur les **36 affrontements** possibles
   soient les deux éléments choisis — aucun des 36 affrontements n'atteint la
   limite de simulation ;
 - répartition des victoires sur les 21 duels hors miroir de chaque élément :
-  Eau 16, Lumière 15, Glace 11, Vent 11, Foudre 10, Plante 10, Feu 7, Ombre 4.
+  Eau 14, Lumière 14, Plante 13, Glace 12, Foudre 12, Feu 8, Vent 8, Ombre 3.
   Le classement bouge à chaque retouche : le banc d'essai (`matrix`) sert
   justement à le vérifier après chaque changement de fiche.
 

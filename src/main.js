@@ -74,6 +74,9 @@ function startMatch(pair) {
     },
   });
   loop.start();
+  // poignée de debug : utile pour inspecter un duel depuis la console
+  // (et pour les captures automatisées du dépôt)
+  globalThis.__match = match;
 }
 
 /* --------------------------------------------------------------- */

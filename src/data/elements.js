@@ -641,7 +641,7 @@ const WIND = {
     head: { sprite: 'windShuriken', scale: 4.6, anchorY: 0.5 },
     hitbox: { from: 0.45, to: 1, radius: 18 },
     melee: {
-      damage: 2,
+      damage: 3,
       cooldown: 1, // cadence la plus rapide du roster
       knockback: 205,
       selfRecoil: 70,
@@ -655,19 +655,35 @@ const WIND = {
     name: 'Tornade',
     nameRef: 'Tornado',
     cooldown: 4, // mesuré : 4 s au départ
-    cooldownStep: 0.5, // mesuré : −0,5 s par incantation
-    cooldownFloor: 1, // mesuré : plancher à 1 s
+    /**
+     * Deux mesures à concilier, toutes deux relevées automatiquement :
+     *  • la **cadence réelle** des rafales passe de 4,8 s à 1,4 s en
+     *    17 déclenchements → elle se raccourcit un peu à chaque incantation ;
+     *  • le **couple affiché** avance par pas de +2 dégâts / −0,5 s, et sept
+     *    fois seulement sur le même duel → ces pas-là suivent les rafales qui
+     *    touchent (7 progressions pour 10 → 24 de dégâts, pile).
+     * D'où deux décréments distincts.
+     */
+    cooldownStepOnCast: 0.15,
+    cooldownStep: 0.5, // mesuré, apparié aux +2 dégâts, quand la rafale touche
+    cooldownFloor: 0.5, // mesuré : le HUD descend jusqu'à 0,5 s
     tornado: {
-      radius: 115,
-      duration: 2.2,
-      pull: 80,
-      tickInterval: 0.7,
+      /**
+       * **Rafale, pas une zone.** Détection automatique sur trois vidéos :
+       * la tornade n'existe que 4 à 6 images (0,13 → 0,20 s) et son centre
+       * est toujours à moins de 30 px du Vent — c'est un tourbillon qu'il
+       * déclenche *autour de lui*, pas un vortex lancé sur l'adversaire.
+       */
+      radius: 125, // mesuré : ~120-130 px de diamètre visible
+      duration: 0.2,
+      knockback: 430, // la rafale projette au lieu d'aspirer
       /** « Tornado Damage » du HUD, ramené à l'échelle des PV. */
-      tickDamage: (self) => Math.max(1, Math.round(self.stacks / 18)),
-      damageGain: 2, // mesuré : 10 → 22 par pas de 2
-      damageMax: 24, // plafond observé en fin de duel
-      color: 'rgba(198,186,150,0.42)',
-      edge: 'rgba(150,138,105,0.55)',
+      damage: (self) => Math.max(2, Math.round(self.stacks / 2)),
+      damageGain: 2, // mesuré : 10 → 24 par pas de 2
+      damageMax: 24, // plafond mesuré, apparié au plancher de 0,5 s
+      color: 'rgba(198,186,150,0.55)',
+      edge: 'rgba(150,138,105,0.7)',
+      blades: 6, // lames de vent qui composent le tourbillon
     },
   },
 
@@ -679,10 +695,15 @@ const WIND = {
     barLabelFr: 'SALVE DE TEMPÊTE',
     barFill: '#b9b295',
     barText: '#2a2518',
-    chargeRate: 5,
+    /** Cycle de jauge mesuré : ~8 à 10 s entre deux décharges. */
+    chargeRate: 11,
     chargeOnHit: 2,
-    duration: 4.5,
-    volley: { interval: 0.7, count: 2, spread: 0.9, projectile: 'crescent' },
+    /**
+     * Décharge **courte et dense** : sur la vidéo, la cible perd ~16 PV en
+     * une seconde et demie au moment où la jauge se vide.
+     */
+    duration: 1.5,
+    volley: { interval: 0.3, count: 2, spread: 1.1, projectile: 'crescent' },
     speedBonus: 1.25,
   },
 
@@ -692,7 +713,7 @@ const WIND = {
       sprite: 'windCrescent',
       scale: 3,
       speed: 430,
-      damage: 1,
+      damage: 3,
       radius: 12,
       life: 2.2,
       bounces: 1,

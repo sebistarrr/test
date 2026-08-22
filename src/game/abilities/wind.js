@@ -1,42 +1,45 @@
 /**
  * Pouvoirs du VENT.
  *
- *  • Tornade — un vortex posé sur l'adversaire qui l'aspire et le blesse.
- *    Chaque incantation renforce la tornade (« Tornado Damage » +2) et
- *    raccourcit la recharge (4 s → 1 s), exactement comme sur la vidéo : les
- *    deux compteurs du HUD bougent ensemble.
+ *  • Tornade — une **rafale tournoyante déclenchée autour de lui**, pas un
+ *    vortex lancé au loin. Détection automatique sur trois vidéos : elle ne
+ *    dure que 4 à 6 images (0,13 → 0,20 s) et son centre reste à moins de
+ *    30 px du Vent. Elle projette violemment ce qu'elle attrape.
  *
- *  • Salve de tempête (ultime) — pluie de croissants d'air et pointe de
- *    vitesse pendant toute la durée.
+ *    Elle part sur une recharge qui **se raccourcit de 4 s à 0,5 s**, et les
+ *    deux compteurs du HUD avancent ensemble (+2 dégâts, −0,5 s) — mais
+ *    seulement quand la rafale **touche** : on compte 17 déclenchements pour
+ *    7 progressions sur un même duel, et les incantations qui ne rapportent
+ *    rien sont précisément celles où l'adversaire était hors de portée.
+ *
+ *  • Salve de tempête (ultime) — décharge courte et dense de croissants
+ *    d'air : sur la vidéo, la cible perd ~16 PV en une seconde et demie au
+ *    moment où la jauge se vide.
  *
  * @module game/abilities/wind
  */
 
 import { TAU, clamp } from '../../core/math.js';
-import { tickZones } from './zone.js';
 
 export const windAbilities = {
   id: 'wind',
 
   init(f) {
-    /** @type {Array<{x:number,y:number,r:number,life:number,angle:number,tick:number}>} */
-    f.state.tornados = [];
+    /** @type {Array<{x:number,y:number,r:number,life:number,max:number,angle:number}>} */
+    f.state.gusts = [];
     f.state.volleyTimer = 0;
   },
 
   update(f, dt, now, game) {
     const el = f.el;
-    const t = el.ability.tornado;
 
-    // entretien des tornades en cours
-    tickZones(f.state.tornados, f, dt, now, game, {
-      pull: t.pull,
-      tickInterval: t.tickInterval,
-      tickDamage: t.tickDamage(f),
-      kind: 'tornado',
-      sparkColor: '#e6dcc0',
-      spin: 3,
-    });
+    // les rafales ne vivent qu'une fraction de seconde
+    for (let i = f.state.gusts.length - 1; i >= 0; i--) {
+      const g = f.state.gusts[i];
+      g.life -= dt;
+      g.angle += 14 * dt;
+      if (g.life <= 0) f.state.gusts.splice(i, 1);
+    }
 
     /* ---------- ultime ---------- */
     const ult = el.ultimate;
@@ -62,38 +65,58 @@ export const windAbilities = {
     /* ---------- tornade ---------- */
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
-    if (f.ability.timer <= 0) this.castTornado(f, game);
+    if (f.ability.timer <= 0) this.castTornado(f, now, game);
   },
 
-  castTornado(f, game) {
+  castTornado(f, now, game) {
     const a = f.el.ability;
     const t = a.tornado;
     const target = f.opponent;
-    // la tornade tombe sur l'adversaire (ou devant soi s'il n'y en a plus)
-    const x = target && target.alive ? target.x : f.x + Math.cos(f.heading) * 160;
-    const y = target && target.alive ? target.y : f.y + Math.sin(f.heading) * 160;
 
-    f.state.tornados.push({ x, y, r: t.radius, life: t.duration, angle: 0, tick: 0 });
-    game.fx.ring(x, y, 20, t.radius, 0.4, t.edge, 6, true);
-    for (let i = 0; i < 18; i++) {
+    f.state.gusts.push({ x: f.x, y: f.y, r: t.radius, life: t.duration, max: t.duration, angle: 0 });
+    game.fx.ring(f.x, f.y, 20, t.radius, 0.3, t.edge, 6, true);
+    for (let i = 0; i < 14; i++) {
       const ang = game.rng.range(0, TAU);
       game.fx.spawn({
         kind: 'dot',
-        x: x + Math.cos(ang) * t.radius * 0.8,
-        y: y + Math.sin(ang) * t.radius * 0.8,
-        vx: -Math.sin(ang) * 150,
-        vy: Math.cos(ang) * 150,
-        life: 0.6,
+        x: f.x + Math.cos(ang) * t.radius * 0.7,
+        y: f.y + Math.sin(ang) * t.radius * 0.7,
+        vx: -Math.sin(ang) * 260,
+        vy: Math.cos(ang) * 260,
+        life: 0.35,
         size: 3,
         color: '#cfc6a8',
-        drag: 1.2,
+        drag: 1.6,
       });
     }
 
-    // les deux compteurs du HUD progressent ensemble (mesuré),
-    // la puissance de la tornade plafonnant comme dans la vidéo
-    f.stacks = Math.min(t.damageMax, f.stacks + t.damageGain);
-    f.ability.cooldown = Math.max(a.cooldownFloor, f.ability.cooldown - a.cooldownStep);
+    // la rafale ne blesse que si l'adversaire est pris dedans
+    let landed = false;
+    if (target && target.alive) {
+      const dx = target.x - f.x;
+      const dy = target.y - f.y;
+      const d = Math.hypot(dx, dy);
+      if (d <= t.radius + target.radius) {
+        landed = true;
+        game.damage(target, t.damage(f), f, {
+          kind: 'tornado',
+          x: target.x,
+          y: target.y,
+          nx: dx / (d || 1),
+          ny: dy / (d || 1),
+          knockback: t.knockback,
+        });
+      }
+    }
+
+    // la cadence s'accélère à chaque rafale…
+    let cd = f.ability.cooldown - a.cooldownStepOnCast;
+    // …et une rafale qui touche fait avancer le couple affiché d'un cran
+    if (landed) {
+      f.stacks = Math.min(t.damageMax, f.stacks + t.damageGain);
+      cd -= a.cooldownStep;
+    }
+    f.ability.cooldown = Math.max(a.cooldownFloor, cd);
     f.ability.timer = f.ability.cooldown;
   },
 
@@ -118,29 +141,36 @@ export const windAbilities = {
     }
   },
 
-  /** Vortex translucide : anneaux concentriques qui tournent. */
+  /** Rafale : un tourbillon de lames d'air, très bref. */
   drawUnder(ctx, f) {
     const t = f.el.ability.tornado;
-    for (const z of f.state.tornados) {
-      const fade = Math.min(1, z.life / 0.5);
+    for (const g of f.state.gusts) {
+      const k = g.life / g.max; // 1 → 0
       ctx.save();
-      ctx.globalAlpha = fade;
-      ctx.translate(z.x, z.y);
-      ctx.rotate(z.angle);
+      ctx.globalAlpha = Math.min(1, k * 1.4);
+      ctx.translate(g.x, g.y);
+      ctx.rotate(g.angle);
 
-      const g = ctx.createRadialGradient(0, 0, z.r * 0.15, 0, 0, z.r);
-      g.addColorStop(0, 'rgba(232,225,200,0.65)');
-      g.addColorStop(1, t.color);
-      ctx.fillStyle = g;
+      const r = g.r * (0.65 + 0.35 * (1 - k)); // le tourbillon s'ouvre
+      const grad = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
+      grad.addColorStop(0, 'rgba(240,234,214,0.9)');
+      grad.addColorStop(1, t.color);
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.arc(0, 0, z.r, 0, TAU);
+      ctx.arc(0, 0, r, 0, TAU);
       ctx.fill();
 
+      // lames d'air enroulées
       ctx.strokeStyle = t.edge;
-      ctx.lineWidth = 3;
-      for (let i = 1; i <= 3; i++) {
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      for (let i = 0; i < t.blades; i++) {
+        const a0 = (TAU * i) / t.blades;
         ctx.beginPath();
-        ctx.ellipse(0, 0, z.r * (i / 3.2), z.r * (i / 4.6), z.angle * (i % 2 ? 1 : -1), 0, TAU);
+        ctx.arc(0, 0, r * 0.62, a0, a0 + 1.1);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.9, a0 + 0.5, a0 + 1.5);
         ctx.stroke();
       }
       ctx.restore();
