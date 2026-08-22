@@ -9,7 +9,7 @@ GitHub Pages.
 
 | Élément | Arme | Signature | Ultime |
 | --- | --- | --- | --- |
-| **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme + drain) |
+| **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme débordant + drain) |
 | **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
 | **Feu** | Lame ardente | brûlure qui s'aggrave | Rage infernale (nova + ailes) |
 | **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
@@ -20,7 +20,7 @@ GitHub Pages.
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
 
 ---
 
@@ -155,7 +155,7 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Vitesse de déplacement        | 400 → 500 px/s                    |
 | Jauges du HUD                 | 268 × 35 px, en x = 39 et x = 412, y = 965 |
 | Ligne de stat                 | ligne de base y = 1036            |
-| Dôme du Lien d'essence        | rayon ≈ 270 px, `rgb(52,46,70)`   |
+| Dôme du Lien d'essence        | rayon ≈ 265 px, `rgb(52,46,70)`, 5,65 s, non clippé |
 | Champ de Blizzard             | rayon ≈ 130 px                    |
 | Progression « Shadow Step Cooldown » | 3 s → 0,7 s par paliers de 0,2 s |
 | Progression « Damage/Slow »   | 1 → 13 sur un duel d'une minute   |

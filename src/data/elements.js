@@ -90,7 +90,7 @@ const SHADOW = {
     hitbox: { from: 0.42, to: 1, radius: 13 },
     melee: {
       damage: 5, // calé : chutes de PV observées de ~4-5 côté Glace
-      cooldown: 1.15, // s entre deux touches de la même arme
+      cooldown: 1.05, // s entre deux touches de la même arme
       knockback: 300,
       selfRecoil: 90,
     },
@@ -110,8 +110,8 @@ const SHADOW = {
     blink: {
       distance: 190,
       ghosts: 7, // images fantômes laissées derrière
-      invulnerable: 0.12,
-      speedBoost: 1.35, // pendant 0,45 s après le saut
+      invulnerable: 0.25, // déduit : la fenêtre d'esquive du saut
+      speedBoost: 1.5, // pendant 0,45 s après le saut
       boostDuration: 0.45,
     },
     /** Volée tirée à l'arrivée (3 traits observés dans la vidéo). */
@@ -128,11 +128,13 @@ const SHADOW = {
     barFill: '#870286',
     barText: '#f3e8ff',
     /** Charge : +chargeRate/s et +chargeOnHit par touche portée. */
-    chargeRate: 4.5, // calé : ~2 incantations sur un duel d'une minute
-    chargeOnHit: 2,
-    duration: 6.5, // mesuré : dôme actif ~6 s
+    chargeRate: 5.5, // calé : ~3 incantations, pour compenser le drain plus lent
+    chargeOnHit: 3,
+    duration: 5.65, // mesuré deux fois : 5,66 s et 5,63 s
     dome: {
-      radius: 270, // mesuré : ~270 px de rayon
+      radius: 265, // mesuré : largeur médiane stable à 209 px ×1,25
+      /** Le dôme **déborde de l'arène** : dans la vidéo il recouvre le HUD. */
+      clipToArena: false,
       fill: 'rgba(30,24,45,0.88)', // pipette : rgb(52,46,70) sur blanc
       edge: 'rgba(76,29,149,0.95)',
       edgeWidth: 4,
@@ -145,7 +147,8 @@ const SHADOW = {
       color: '#7c3aed',
       core: 'rgba(255,255,255,0.55)',
       width: 5,
-      tickInterval: 0.28, // mesuré : ~1 PV toutes les 0,3 s
+      /** Drain mesuré sur un dôme entier : 10 PV en 4,5 s, soit 2,2 PV/s. */
+      tickInterval: 0.4,
       tickDamage: 1,
       slow: 0.15, // ralentit la cible tant que le lien tient
       motes: 26, // particules qui remontent le lien vers l'Ombre
@@ -159,7 +162,7 @@ const SHADOW = {
       sprite: 'darkBlade', // mini version de la lame (observé)
       scale: 2.2, // mesuré : trait d'ombre d'environ 44 px de long
       speed: 600,
-      damage: 3,
+      damage: 5,
       radius: 11,
       life: 1.5,
       bounces: 0,

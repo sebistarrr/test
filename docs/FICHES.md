@@ -22,7 +22,9 @@ fiche gelée correspondante.
   | `WIND vs WATER` | Vent | 576 × 1024, 63,1 s |
   | `PLANT vs FIRE` | Plante | 576 × 1024, 62,2 s |
   | `ICE vs PLANT` | Plante | 576 × 1024, 93,7 s |
-  | `DARK vs PLANT` | Plante | 576 × 1024, 99,0 s |
+  | `DARK vs PLANT` | Plante, Ombre | 576 × 1024, 99,0 s |
+  | `DARK vs LIGHTNING` | Ombre | 576 × 1024, 48,1 s |
+  | `DARK vs FIRE` | Ombre | 576 × 1024, 54,8 s |
 
   Toutes sauf la première sont en 576 × 1024, soit exactement 0,8 × son format :
   mêmes proportions d'arène, valeurs converties par ×1,25.
@@ -72,7 +74,7 @@ pas déteindre sur le suivant.
 | Rotation               | 5,76 rad/s (330 °/s), sens initial anti-horaire | mesuré |
 | Zone tranchante        | 42 % → 100 % de la portée, épaisseur 13 px | déduit |
 | Dégâts                 | 5 PV                                  | calé   |
-| Cadence                | 1 touche / 1,15 s maximum             | calé   |
+| Cadence                | 1 touche / 1,05 s maximum             | calé   |
 | Recul infligé / subi   | 300 / 90                              | calé   |
 
 ### Pouvoir — Pas d'ombre (`Shadow Step`)
@@ -82,8 +84,8 @@ pas déteindre sur le suivant.
 | Recharge initiale      | 3 s                                               | mesuré |
 | Réduction par usage    | −0,2 s, plancher 0,7 s                            | mesuré |
 | Téléportation          | 190 px dans l'axe de course, 7 images fantômes    | mesuré |
-| Invulnérabilité        | 0,12 s                                            | déduit |
-| Accélération           | ×1,35 pendant 0,45 s                              | déduit |
+| Invulnérabilité        | 0,25 s                                            | déduit |
+| Accélération           | ×1,5 pendant 0,45 s                               | déduit |
 | Volée                  | 3 traits d'ombre, dispersion ±0,38 rad, dans l'axe du saut | mesuré |
 | Affichage HUD          | `Shadow Step Cooldown: X.Xs`                      | mesuré |
 
@@ -91,13 +93,18 @@ pas déteindre sur le suivant.
 
 | Propriété          | Valeur                                             | Source |
 | ------------------ | -------------------------------------------------- | ------ |
-| Jauge              | +4,5 %/s, +2 % par touche portée                   | calé   |
-| Durée              | 6,5 s (la jauge se vide pendant l'incantation)     | mesuré |
-| Dôme               | rayon 270 px, **figé** au point d'incantation, `rgba(30,24,45,.88)` | mesuré |
+| Jauge              | +5,5 %/s, +3 % par touche portée                   | calé   |
+| Durée              | **5,65 s** — chronométrée deux fois : 5,66 s et 5,63 s | mesuré |
+| Dôme               | rayon 265 px (largeur médiane stable à 209 px ×1,25), **figé** au point d'incantation, `rgba(30,24,45,.88)` | mesuré |
+| Débordement        | le dôme **n'est pas clippé à l'arène** : dans la vidéo il recouvre le bas de l'écran jusqu'au HUD | mesuré |
 | Poussière          | 120 particules violettes en dérive dans le dôme    | mesuré |
 | Rayon de drain     | trait violet + cœur blanc, relié en permanence     | mesuré |
-| Drain              | 1 PV toutes les 0,28 s                             | mesuré |
+| Drain              | **1 PV toutes les 0,4 s** — 10 PV en 4,5 s sur un dôme entier, soit 2,2 PV/s | mesuré |
 | Ralentissement     | −15 % sur la cible tant que le lien tient          | déduit |
+
+Le suivi automatique du dôme confirme aussi qu'il est bien **ancré** : sur ses
+5,6 s d'existence, la distance entre son centre et l'Ombre passe de 71 px à
+324 px — le combattant s'en éloigne, le dôme ne le suit pas.
 
 ### Projectile — Trait d'ombre
 
@@ -105,7 +112,7 @@ pas déteindre sur le suivant.
 | --------- | ---------------------------- | ------ |
 | Sprite    | `darkBlade` ×2,2 (≈ 44 px)   | mesuré |
 | Vitesse   | 600 px/s                     | calé   |
-| Dégâts    | 3 PV                         | calé   |
+| Dégâts    | 5 PV                         | calé   |
 | Rayon     | 11 px                        | déduit |
 | Durée     | 1,5 s, **aucun rebond**      | mesuré |
 | Traînée   | violette, tous les 50 ms     | mesuré |
@@ -373,7 +380,8 @@ Vérifié par simulation sans rendu sur les **36 affrontements** possibles
   soient les deux éléments choisis — aucun des 36 affrontements n'atteint la
   limite de simulation ;
 - répartition des victoires sur les 21 duels hors miroir de chaque élément :
-  Eau 14, Lumière 14, Plante 13, Glace 12, Foudre 12, Feu 8, Vent 8, Ombre 3.
+  Lumière 14, Ombre 11, Foudre 11, Plante 11, Eau 11, Glace 10, Feu 9, Vent 7 —
+  l'écart le plus resserré depuis le début du projet.
   Le classement bouge à chaque retouche : le banc d'essai (`matrix`) sert
   justement à le vérifier après chaque changement de fiche.
 
@@ -400,6 +408,7 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Absorption totale         | un coup entièrement absorbé fait clignoter sans coûter de PV |
 | Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège)          |
 | Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
+| Rendu hors cadre          | passe `drawUnbounded` pour les effets qui débordent (dôme) |
 
 ## Comment les mesures ont été prises
 

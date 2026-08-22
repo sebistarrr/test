@@ -347,6 +347,16 @@ export class Match {
     ctx.clip();
 
     for (const [f, mod] of this.modules) mod.drawUnder(ctx, f, this, this.time);
+    ctx.restore();
+
+    // passe **hors arène** : certains effets débordent volontairement du cadre
+    // (le dôme du Lien d'essence recouvre jusqu'au HUD dans la vidéo)
+    for (const [f, mod] of this.modules) mod.drawUnbounded?.(ctx, f, this, this.time);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(inner.left, inner.top, inner.right - inner.left, inner.bottom - inner.top);
+    ctx.clip();
     this.fx.draw(ctx, true);
     this.projectiles.draw(ctx);
     for (const f of this.fighters) {

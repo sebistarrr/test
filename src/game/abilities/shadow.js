@@ -182,8 +182,13 @@ export const shadowAbilities = {
 
   /* ---------- rendu ---------- */
 
-  /** Dôme : sous les combattants, à l'intérieur de l'arène. */
-  drawUnder(ctx, f, game) {
+  drawUnder() {},
+
+  /**
+   * Dôme : dessiné **hors du cadre de l'arène**, il la déborde largement —
+   * dans la vidéo il recouvre le bas de l'écran jusqu'au HUD.
+   */
+  drawUnbounded(ctx, f, game) {
     const dome = f.state.dome;
     if (!dome || f.ult.active <= 0) return;
     const d = f.el.ultimate.dome;
