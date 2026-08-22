@@ -1,14 +1,14 @@
 # Publication du site statique sur GitHub Pages.
 #
-# Déclenchement manuel par défaut (Actions → Deploy to GitHub Pages → Run
-# workflow). Pour publier à chaque push, décommente le bloc `push:` ci-dessous
-# et vérifie que Settings → Pages → Source est réglé sur « GitHub Actions ».
+# Prérequis : Settings → Pages → Source = « GitHub Actions ».
+# Publication automatique à chaque push sur main, plus déclenchement manuel
+# (Actions → Deploy to GitHub Pages → Run workflow).
 name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
-  # push:
-  #   branches: [main]
 
 permissions:
   contents: read
