@@ -194,6 +194,9 @@ export class Match {
         target.applySlow(slow, onHit.slowDuration, this.time);
       }
       if (onHit.slow) target.applySlow(onHit.slow, onHit.slowDuration ?? 1.5, this.time);
+      if (onHit.tint) {
+        target.applyTint(onHit.tint.color, onHit.tint.duration, this.time, onHit.tint.alpha ?? 1);
+      }
       if (onHit.dot) {
         target.applyDot(
           {
@@ -226,8 +229,16 @@ export class Match {
     // le module de la cible peut absorber tout ou partie des dégâts
     // (bouclier de la Lumière) avant qu'ils ne touchent les PV
     const targetMod = this.modules.get(target);
+    const before = amt;
     if (targetMod?.onDamage) amt = Math.max(0, Math.round(targetMod.onDamage(target, amt, source, opts, this)));
-    if (amt === 0 && opts.kind !== 'melee') return;
+
+    // un coup entièrement absorbé ne coûte pas de PV mais reste un coup :
+    // la cible clignote quand même (c'est ce que montrent les vidéos de la
+    // Lumière, qui encaisse en restant à 100 PV)
+    if (amt === 0) {
+      if (before > 0) target.flash = PHYSICS.hitFlash;
+      return;
+    }
 
     target.hp = Math.max(0, target.hp - amt);
     target.flash = PHYSICS.hitFlash;

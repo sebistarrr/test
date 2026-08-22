@@ -13,14 +13,14 @@ GitHub Pages.
 | **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
 | **Feu** | Lame ardente | brûlure qui s'aggrave | Rage infernale (nova + ailes) |
 | **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
-| **Lumière** | Marteau d'aube | bouclier qui riposte, recul énorme | Piège radiant (trait doré) |
+| **Lumière** | Marteau d'aube | encaisse pour devenir puissante (bouclier qui convertit) | Piège radiant (trait doré) |
 | **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
 | **Vent** | Shuriken de bourrasque | le plus rapide, tornades | Salve de tempête |
 | **Plante** | Liane fouettante | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs |
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
 
 ---
 
@@ -160,7 +160,7 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Progression « Shadow Step Cooldown » | 3 s → 0,7 s par paliers de 0,2 s |
 | Progression « Damage/Slow »   | 1 → 13 sur un duel d'une minute   |
 | Progression « Burn Damage/Duration » | 1 → 5,5 par pas de 0,5     |
-| Progression « Shield Damage » / « Knockback » | 1 → 14 / 1500 → 5400 (+300 par touche) |
+| Progression « Shield Damage » / « Knockback » | 1 → 14 / 1500 → 5400, **+1 / +300 par coup encaissé** |
 | Progression « Tornado Damage » / « Cooldown » | 10 → 22 (+2) / 4 s → 1 s (−0,5 s) |
 | Progression « Chain Damage »  | 1 → 4,5 par pas de 0,5            |
 | Progression « Whirlpool Damage » / « Size » | 1 → 7 / 70 → 100    |

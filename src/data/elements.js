@@ -240,7 +240,15 @@ const ICE = {
       knockback: 260,
       selfRecoil: 80,
       /** Chaque touche empile un ralentissement sur la cible. */
-      onHit: { stackGain: 1, slowPerStack: 0.03, slowMax: 0.45, slowDuration: 2.6 },
+      onHit: {
+        stackGain: 1,
+        slowPerStack: 0.03,
+        slowMax: 0.45,
+        slowDuration: 2.6,
+        /** Givre visible : la victime prend un voile bleuté (observé — sur
+         *  le jaune de la Lumière, cela donne le vert pâle de la vidéo). */
+        tint: { color: '#7fe3ff', alpha: 0.42, duration: 2.6 },
+      },
     },
   },
 
@@ -485,40 +493,64 @@ const LIGHT = {
     head: { sprite: 'lightHammerHead', scale: 4.6, anchorY: 0.5 },
     hitbox: { from: 0.58, to: 1, radius: 22 },
     melee: {
-      damage: 4,
-      cooldown: 1.5, // arme lourde : la cadence la plus lente
+      /**
+       * **Les dégâts du marteau SONT la stat « Shield Damage ».**
+       * Vérifié image par image : à `Shield Damage: 3` la cible perd 3 PV,
+       * à 4-5 elle en perd 5. La Lumière commence donc à 1 dégât par coup et
+       * ne devient dangereuse qu'après avoir encaissé.
+       */
+      damage: (self) => Math.max(1, Math.round(self.stacks)),
+      cooldown: 1.5, // arme lourde : la cadence la plus lente du roster
       /** Le recul suit la stat « Knockback » du HUD (1500 → 5400 mesuré). */
       knockback: (self) => 210 + self.stacks2 * 0.05,
       selfRecoil: 60,
-      onHit: {
-        stackGain: 1, // « Shield Damage » : 1 → 14 mesuré
-        stackMax: 30,
-        stack2Gain: 300, // « Knockback » : +300 par touche (mesuré)
-        stack2Max: 9000,
-      },
+      // aucune progression ici : les deux stats montent quand la Lumière
+      // ENCAISSE, pas quand elle frappe (voir ability.shield ci-dessous)
     },
   },
 
-  /** Bouclier permanent : absorbe puis riposte. */
+  /**
+   * Égide — bouclier **permanent et passif** : il absorbe, riposte, et
+   * surtout **convertit ce qu'il encaisse en puissance**.
+   *
+   * Mesuré : la Lumière reste à 100 PV pendant 11 s sous les coups, et à
+   * chaque coup encaissé ses deux compteurs montent d'un cran (+1 dégât,
+   * +300 de recul) pendant que l'attaquant perd 1 PV. Aucune onde de choc
+   * périodique n'apparaît dans les vidéos : l'Égide n'a pas d'incantation.
+   */
   ability: {
     id: 'aegis',
     name: 'Égide',
     nameRef: 'Aegis',
-    cooldown: 7,
+    /** Rythme de rechargement du pool (le « sort » ne fait que le remplir). */
+    cooldown: 9,
     cooldownStep: 0,
-    cooldownFloor: 7,
+    cooldownFloor: 9,
     shield: {
       /** Capacité = base + « Shield Damage » : le bouclier grossit avec la stat. */
-      capacity: (self) => 8 + self.stacks * 0.45,
+      capacity: (self) => 9 + self.stacks * 0.4,
       /** Régénération après un répit sans encaisser. */
       regen: 2,
-      regenDelay: 2.6,
-      /** Riposte infligée à l'attaquant quand le bouclier encaisse. */
-      reflect: (self) => Math.max(1, Math.round(self.stacks / 4)),
-      reflectCooldown: 0.9,
+      regenDelay: 2.4,
+      /** Riposte fixe : 1 PV rendu à l'attaquant (mesuré). */
+      reflect: 1,
+      reflectCooldown: 0.35,
+      /**
+       * Gain par coup encaissé — mesuré : +1 et +300, y compris quand une
+       * partie des dégâts passe. Seuls les coups **francs** comptent : les
+       * dégâts de zone ou sur la durée (blizzard, brûlure) ne font pas monter
+       * les compteurs, ce qui a été vérifié pendant un blizzard de 30 PV.
+       */
+      gainOnHit: { stack: 1, stackMax: 14, stack2: 300, stack2Max: 5400 },
+      /**
+       * Plafonds **mesurés** : la stat culmine à 14 et le recul à 5400
+       * (= 1500 + 13 × 300) sur le duel le plus long. Un court délai de
+       * conversion évite qu'une rafale de coups fasse exploser le compteur,
+       * qui monte d'environ un cran toutes les trois secondes sur les vidéos.
+       */
+      gainCooldown: 1.5,
+      countedKinds: ['melee', 'projectile', 'bulb', 'chain'],
     },
-    /** L'incantation recharge le bouclier et repousse l'adversaire. */
-    pulse: { radius: 190, knockback: 420, damage: 2 },
   },
 
   ultimate: {
@@ -539,8 +571,10 @@ const LIGHT = {
       gap: 5, // double trait doré (observé)
       /** La cible prend la teinte de la Lumière tant qu'elle est piégée. */
       tint: '#f8f0b0',
+      tintAlpha: 0.92,
       slow: 0.55,
-      tickInterval: 0.4,
+      /** Drain mesuré : 1 PV par seconde, pas davantage. */
+      tickInterval: 1,
       tickDamage: 1,
       /** Le piège tire la cible vers la Lumière. */
       pull: 90,

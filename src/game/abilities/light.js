@@ -1,16 +1,23 @@
 /**
  * Pouvoirs de la LUMIÈRE.
  *
- *  • Égide — un bouclier permanent absorbe les dégâts et **riposte** :
- *    c'est la statistique « Shield Damage » du HUD. Il se régénère après un
- *    répit, et l'incantation le recharge d'un coup en repoussant l'adversaire.
+ * Le kit est celui d'un **contre-attaquant** : la Lumière ne commence pas
+ * forte, elle le devient en encaissant.
+ *
+ *  • Égide (passif) — un bouclier permanent absorbe les coups, riposte 1 PV,
+ *    et surtout **convertit chaque coup encaissé en puissance** : +1 aux
+ *    dégâts du marteau (« Shield Damage ») et +300 à son recul
+ *    (« Knockback »). Les deux compteurs du HUD sont donc un compteur de
+ *    coups encaissés, pas de coups portés.
  *
  *  • Piège radiant (ultime) — le double trait doré de la vidéo : il relie la
- *    Lumière à sa cible, la teinte de sa propre couleur, la ralentit fortement,
- *    la tire vers elle et la draine.
+ *    Lumière à sa cible, la teinte de sa propre couleur, la ralentit
+ *    fortement, la tire vers elle et la draine d'1 PV par seconde.
  *
- * La seconde statistique, « Knockback », monte de 300 par touche (mesuré
- * 1500 → 5400) et pilote directement la force de projection du marteau.
+ * Relevé image par image (voir docs/FICHES.md) : la Lumière tient 11 s à
+ * 100 PV sous les coups pendant que ses compteurs montent, ses dégâts d'arme
+ * valent exactement la stat affichée, et les dégâts de zone (blizzard) ne
+ * font monter aucun compteur.
  *
  * @module game/abilities/light
  */
@@ -26,6 +33,7 @@ export const lightAbilities = {
     f.shield = f.shieldMax;
     f.state.regenDelay = 0;
     f.state.reflectCd = 0;
+    f.state.gainCd = 0;
     f.state.snareTick = 0;
   },
 
@@ -37,6 +45,7 @@ export const lightAbilities = {
     f.shieldMax = shield.capacity(f);
     f.state.regenDelay = Math.max(0, f.state.regenDelay - dt);
     f.state.reflectCd = Math.max(0, f.state.reflectCd - dt);
+    f.state.gainCd = Math.max(0, f.state.gainCd - dt);
     if (f.state.regenDelay <= 0 && f.shield < f.shieldMax) {
       f.shield = Math.min(f.shieldMax, f.shield + shield.regen * dt);
     }
@@ -57,61 +66,51 @@ export const lightAbilities = {
       if (f.ult.ready) this.castSnare(f, game);
     }
 
-    /* ---------- égide ---------- */
+    /* ---------- rechargement complet périodique de l'Égide ----------
+       L'Égide n'a pas d'incantation visible dans les vidéos : ce « sort »
+       ne fait que remplir le pool d'un coup, avec un bref éclat doré. */
     if (game.phase !== 'fight') return;
     f.ability.timer -= dt;
-    if (f.ability.timer <= 0) this.castAegis(f, game);
-  },
-
-  castAegis(f, game) {
-    const a = f.el.ability;
-    f.shield = f.shieldMax;
-    f.state.regenDelay = 0;
-
-    const target = f.opponent;
-    if (target && target.alive) {
-      const d = Math.hypot(target.x - f.x, target.y - f.y);
-      if (d <= a.pulse.radius + target.radius) {
-        game.damage(target, a.pulse.damage, f, {
-          kind: 'melee',
-          x: target.x,
-          y: target.y,
-          nx: (target.x - f.x) / (d || 1),
-          ny: (target.y - f.y) / (d || 1),
-          knockback: a.pulse.knockback,
-        });
-      }
+    if (f.ability.timer <= 0) {
+      f.shield = f.shieldMax;
+      f.state.regenDelay = 0;
+      game.fx.ring(f.x, f.y, f.radius, f.radius * 1.8, 0.4, 'rgba(250,220,60,0.75)', 5, true);
+      f.ability.timer = el.ability.cooldown;
     }
-    game.fx.ring(f.x, f.y, f.radius, a.pulse.radius, 0.45, 'rgba(250,220,60,0.9)', 8, true);
-    game.fx.burst(f.x, f.y, 18, { color: ['#facc15', '#ffffff'], speed: 300, size: 6, life: 0.5 });
-    f.ability.timer = a.cooldown;
   },
 
   /**
-   * Absorption + riposte. Appelé par Match avant que les PV ne bougent.
+   * Absorption, riposte et **montée en puissance**. Appelé par Match avant
+   * que les PV ne bougent.
    * @returns {number} dégâts restants après absorption
    */
   onDamage(f, amount, source, opts, game) {
-    f.state.regenDelay = f.el.ability.shield.regenDelay;
-    if (f.shield <= 0 || amount <= 0) return amount;
+    const shield = f.el.ability.shield;
+    f.state.regenDelay = shield.regenDelay;
+    if (amount <= 0) return amount;
 
+    // Un coup franc (arme, projectile, mine, chaîne) nourrit les compteurs.
+    // Les dégâts de zone ou sur la durée n'y changent rien — vérifié sur un
+    // blizzard qui a coûté 30 PV à la Lumière sans faire bouger la stat.
+    const counted = shield.countedKinds.includes(opts.kind ?? '') && f.state.gainCd <= 0;
+    if (counted) {
+      f.state.gainCd = shield.gainCooldown;
+      const g = shield.gainOnHit;
+      f.stacks = Math.min(g.stackMax, f.stacks + g.stack);
+      f.stacks2 = Math.min(g.stack2Max, f.stacks2 + g.stack2);
+      game.fx.burst(f.x, f.y, 6, { color: ['#facc15', '#ffffff'], speed: 150, size: 4, life: 0.35 });
+
+      // riposte : 1 PV rendu à l'attaquant
+      if (source && source !== f && source.alive && opts.kind !== 'reflect' && f.state.reflectCd <= 0) {
+        f.state.reflectCd = shield.reflectCooldown;
+        game.damage(source, shield.reflect, f, { kind: 'reflect', x: source.x, y: source.y });
+      }
+    }
+
+    if (f.shield <= 0) return amount;
     const absorbed = Math.min(f.shield, amount);
     f.shield -= absorbed;
-
     game.fx.ring(f.x, f.y, f.radius, f.radius * 1.5, 0.25, 'rgba(255,255,255,0.85)', 5, true);
-
-    // riposte : c'est la stat « Shield Damage »
-    const shield = f.el.ability.shield;
-    if (
-      source &&
-      source !== f &&
-      source.alive &&
-      opts.kind !== 'reflect' &&
-      f.state.reflectCd <= 0
-    ) {
-      f.state.reflectCd = shield.reflectCooldown;
-      game.damage(source, shield.reflect(f), f, { kind: 'reflect', x: source.x, y: source.y });
-    }
     return amount - absorbed;
   },
 
@@ -130,7 +129,7 @@ export const lightAbilities = {
     if (!target || !target.alive) return;
 
     target.applySlow(s.slow, 0.2, now);
-    target.applyTint(s.tint, 0.2, now);
+    target.applyTint(s.tint, 0.2, now, s.tintAlpha ?? 1);
 
     // le trait tire la cible vers la Lumière
     const dx = f.x - target.x;

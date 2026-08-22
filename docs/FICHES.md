@@ -13,6 +13,8 @@ fiche gelée correspondante.
   | `LIGHT vs FIRE` | Lumière, Feu | 576 × 1024, 42,5 s |
   | `LIGHT vs DARK` | Lumière, Ombre | 576 × 1024, 73,0 s |
   | `LIGHT vs LIGHTNING` | Lumière, Foudre | 576 × 1024, 61,2 s |
+  | `ICE vs LIGHT` | Lumière | 576 × 1024, 121,4 s |
+  | `LIGHT vs PLANT` | Lumière, Plante | 576 × 1024, 114,6 s |
   | `FIRE vs WATER` | Feu, Eau | 576 × 1024, 64,4 s |
   | `WIND vs PLANT` | Vent, Plante | 576 × 1024, 80,6 s |
   | `PLANT vs FIRE` | Plante | 576 × 1024, 62,2 s |
@@ -208,21 +210,44 @@ littéralement ce qu'annonce son libellé dans la vidéo.
 
 ## 🛡 LUMIÈRE — `light` (affiché « LIGHT »)
 
-> Forteresse — bouclier qui riposte et marteau qui projette.
+> Contre-attaquant — ne commence pas fort, le devient en encaissant.
 
 | Bloc | Valeur | Source |
 | --- | --- | --- |
 | Corps | rayon 41 px, `#fbf7a3`, contour noir 5 px | mesuré |
 | Déplacement | 415 px/s (le plus lent), virage 1,6 rad/s | calé |
 | Arme | *Marteau d'aube* — portée 155 px, manche gris 91 px + sprite `lightHammerHead` ×4,6 (64 × 78 px) | mesuré |
-| Corps à corps | 4 PV / 1,5 s (la cadence la plus lente) | calé |
-| **Recul** | **= stat « Knockback »** : 1500 au départ, +300 par touche (mesuré), traduit en impulsion `210 + stat × 0,05` | mesuré |
-| **Bouclier** | capacité `8 + stat × 0,45`, régénération 2/s après 2,6 s de répit ; absorbe avant les PV | déduit |
-| **Riposte** | quand le bouclier encaisse, l'attaquant prend `stat/4` PV — c'est la stat « Shield Damage » (1 → 14 mesuré) | déduit |
-| Pouvoir | *Égide* — toutes les 7 s : bouclier rechargé à bloc + onde de 190 px (2 PV, recul 420) | calé |
-| Ultime | *Piège radiant* (`RADIANT SNARE`), 5 s : **double trait doré**, la cible est **teintée en jaune pâle**, ralentie de 55 %, tirée vers la Lumière et drainée d'1 PV / 0,4 s | mesuré |
+| **Dégâts du marteau** | **= stat « Shield Damage »**, donc **1 PV au premier coup** | mesuré |
+| Cadence | 1 coup / 1,5 s — la plus lente du roster | calé |
+| **Recul** | **= stat « Knockback »** : 1500 au départ, traduit en impulsion `210 + stat × 0,05` | mesuré |
+| **Montée en puissance** | les deux stats montent de **+1 / +300 quand la Lumière ENCAISSE un coup franc**, jamais quand elle en porte | mesuré |
+| Plafonds | 14 et 5400 (= 1500 + 13 × 300) — les valeurs maximales vues sur le duel le plus long | mesuré |
+| Délai de conversion | 1,5 s entre deux gains (la vidéo monte d'environ un cran toutes les 3 s) | calé |
+| **Dégâts de zone** | blizzard, brûlure, tourbillon : **ne font monter aucun compteur** — vérifié sur un blizzard qui coûte 30 PV à la Lumière sans bouger la stat | mesuré |
+| **Bouclier** | capacité `9 + stat × 0,4`, régénération 2/s après 2,4 s de répit, rechargé à bloc toutes les 9 s ; absorbe avant les PV — la Lumière tient 11 s à 100 PV sous les coups | mesuré |
+| **Riposte** | 1 PV rendu à l'attaquant à chaque coup encaissé | mesuré |
+| Incantation | **aucune** — l'Égide est purement passive, aucune onde de choc n'apparaît dans les quatre vidéos | mesuré |
+| Ultime | *Piège radiant* (`RADIANT SNARE`), 5 s : **double trait doré**, la cible est **teintée en jaune pâle**, ralentie de 55 %, tirée vers la Lumière et drainée d'**1 PV par seconde** | mesuré |
 | Projectile | aucun — tout passe par le marteau et le piège | mesuré |
 | HUD | `Shield Damage: N` **et** `Knockback: M` (deux lignes) | mesuré |
+
+### Comment la mécanique a été établie
+
+Trois relevés image par image, à 0,1 s d'intervalle, sur `LIGHT vs LIGHTNING`,
+`LIGHT vs PLANT` et `ICE vs LIGHT` :
+
+1. **t = 3,37 s** — la Lumière clignote en blanc (elle encaisse), ses PV
+   **ne bougent pas** (100 → 100), la stat passe de 2 à 3, le recul de 1800 à
+   2100, et l'adversaire perd 1 PV dans la foulée : c'est la riposte.
+2. **t ≈ 5,0 s** — l'adversaire perd **3 PV** d'un coup alors que la stat vaut
+   3, et la stat **ne bouge pas** : le marteau frappe pour la valeur affichée.
+3. **t = 36 → 41 s** — pendant un blizzard, la Lumière perd 30 PV et ses deux
+   compteurs restent figés : les dégâts de zone ne nourrissent pas l'Égide.
+
+Le duel `ICE vs LIGHT` montre aussi la cible du piège **prendre la couleur
+pâle de la Lumière**, et la Lumière **verdir** quand elle est givrée — un voile
+bleuté posé sur son jaune. Cette teinte d'état est désormais générique :
+`onHit.tint` dans la fiche, avec un alpha de mélange.
 
 ---
 
@@ -345,6 +370,8 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Dégâts sur la durée       | un DoT par source, rafraîchi à chaque nouvelle application |
 | Absorption                | le module de la cible peut absorber avant les PV (bouclier) |
 | Soin                      | `Match.heal()`, plafonné aux 100 PV de départ              |
+| Absorption totale         | un coup entièrement absorbé fait clignoter sans coûter de PV |
+| Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège)          |
 | Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
 
 ## Comment les mesures ont été prises

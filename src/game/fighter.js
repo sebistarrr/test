@@ -71,9 +71,10 @@ export class Fighter {
      *               source:Fighter, ring:string|null}>}
      */
     this.dots = [];
-    /** Teinte du corps imposée par un effet (piège de Lumière). */
+    /** Teinte du corps imposée par un effet (givre, piège de Lumière). */
     this.tint = null;
     this.tintUntil = 0;
+    this.tintAlpha = 1; // 1 = remplace la couleur, <1 = se mélange
     /** Bouclier absorbant (Lumière). */
     this.shield = 0;
     this.shieldMax = 0;
@@ -128,10 +129,16 @@ export class Fighter {
     else this.dots.push(dot);
   }
 
-  /** Teinte temporaire du corps (effet visuel d'un contrôle adverse). */
-  applyTint(color, duration, now) {
+  /**
+   * Teinte temporaire du corps (effet visuel d'un contrôle adverse).
+   * `alpha` < 1 mélange la teinte à la couleur d'élément : c'est ainsi que la
+   * Glace givre ses victimes — sur le jaune de la Lumière, le bleu du givre
+   * donne le vert pâle qu'on voit dans la vidéo.
+   */
+  applyTint(color, duration, now, alpha = 1) {
     this.tint = color;
     this.tintUntil = now + duration;
+    this.tintAlpha = alpha;
   }
 
   /** Couleur d'anneau d'état à dessiner autour du corps, s'il y en a une. */
@@ -248,13 +255,18 @@ export class Fighter {
     if (this.customWeapon) this.customWeapon(ctx);
     else this.drawWeapon(ctx);
 
-    // corps — la teinte d'un contrôle adverse prime sur la couleur d'élément,
-    // le flash blanc d'encaissement prime sur tout
-    const filled = this.flash > 0 ? look.bodyHit : this.tint ?? look.body;
+    // corps — le flash blanc d'encaissement prime sur tout, puis la teinte
+    // d'un contrôle adverse se pose (ou se mélange) sur la couleur d'élément
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, TAU);
-    ctx.fillStyle = filled;
+    ctx.fillStyle = this.flash > 0 ? look.bodyHit : look.body;
     ctx.fill();
+    if (this.flash <= 0 && this.tint) {
+      ctx.globalAlpha = this.tintAlpha;
+      ctx.fillStyle = this.tint;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+    }
     ctx.lineWidth = look.outlineWidth;
     ctx.strokeStyle = look.outline;
     ctx.stroke();
