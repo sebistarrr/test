@@ -89,8 +89,8 @@ const SHADOW = {
     /** Portion tranchante (fraction de la portée) + demi-épaisseur. */
     hitbox: { from: 0.42, to: 1, radius: 13 },
     melee: {
-      damage: 4, // calé : chutes de PV observées de ~4-5 côté Glace
-      cooldown: 1.3, // s entre deux touches de la même arme
+      damage: 5, // calé : chutes de PV observées de ~4-5 côté Glace
+      cooldown: 1.15, // s entre deux touches de la même arme
       knockback: 300,
       selfRecoil: 90,
     },
@@ -128,7 +128,7 @@ const SHADOW = {
     barFill: '#870286',
     barText: '#f3e8ff',
     /** Charge : +chargeRate/s et +chargeOnHit par touche portée. */
-    chargeRate: 3.4, // calé : ~2 incantations sur un duel d'une minute
+    chargeRate: 4, // calé : ~2 incantations sur un duel d'une minute
     chargeOnHit: 2,
     duration: 6.5, // mesuré : dôme actif ~6 s
     dome: {
@@ -159,7 +159,7 @@ const SHADOW = {
       sprite: 'darkBlade', // mini version de la lame (observé)
       scale: 2.2, // mesuré : trait d'ombre d'environ 44 px de long
       speed: 600,
-      damage: 2,
+      damage: 3,
       radius: 11,
       life: 1.5,
       bounces: 0,
@@ -252,7 +252,7 @@ const ICE = {
     cooldown: 5, // s entre deux salves hors Blizzard
     cooldownStep: 0, // pas d'accélération : c'est la stat « Damage/Slow » qui monte
     cooldownFloor: 5,
-    burst: { count: 6, spread: Math.PI * 2, projectile: 'iceShard' },
+    burst: { count: 7, spread: Math.PI * 2, projectile: 'iceShard' },
     /** Pendant le Blizzard, salves plus rapides et plus fournies (observé). */
     duringUltimate: { cooldown: 1.2, count: 10 },
   },
@@ -296,7 +296,7 @@ const ICE = {
       sprite: 'iceShard',
       scale: 2.4,
       speed: 380,
-      damage: 1,
+      damage: 2,
       radius: 10,
       life: 3.4,
       bounces: 2, // les éclats ricochent sur les murs (observé)
@@ -314,16 +314,639 @@ const ICE = {
   },
 };
 
+/* ==========================================================================
+ *  FEU  (FIRE)
+ *  Relevé : vidéos « LIGHT vs FIRE » et « FIRE vs WATER ».
+ * ========================================================================== */
+const FIRE = {
+  id: 'fire',
+  name: 'FEU',
+  nameRef: 'FIRE',
+  tagline: 'Attrition — marque l’adversaire d’une brûlure qui s’aggrave',
+  icon: 'iconFlame',
+
+  look: {
+    radius: 41,
+    body: '#fb0a0a', // pipette : rgb(254,0,0)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(249,115,22,0.45)',
+      radius: 1.7,
+      pulse: 3.2,
+      showWhen: 'ultimate-ready',
+    },
+    trail: { color: 'rgba(249,115,22,0.28)', every: 0.05, life: 0.3 },
+    accent: '#f2670c',
+  },
+
+  movement: { speed: 480, turnRate: 1.95, seek: 0.42, mass: 1 },
+
+  weapon: {
+    name: 'Lame ardente',
+    reach: 150, // mesuré : ~166 px, ramené à l'échelle du roster
+    spin: SPIN,
+    spinDir: -1,
+    handle: {
+      length: 78,
+      width: 12,
+      color: '#3f2a20',
+      dark: '#211410',
+      outline: '#0a0502',
+      gem: { at: 0.85, size: 9, color: '#dc2626' },
+    },
+    head: { sprite: 'fireBlade', scale: 4, anchorY: 0.5 },
+    hitbox: { from: 0.5, to: 1, radius: 16 },
+    melee: {
+      damage: 4,
+      cooldown: 1.15,
+      knockback: 240,
+      selfRecoil: 85,
+      onHit: {
+        // « Burn Damage/Duration » monte de 0,5 par touche (1 → 5,5 mesuré)
+        stackGain: 0.5,
+        stackMax: 12,
+        dot: {
+          damage: (self) => Math.max(1, Math.round(self.stacks / 3)),
+          interval: 1,
+          duration: (self) => self.stacks, // la stat sert aussi de durée
+          ring: '#f97316', // cerclage orange sur la victime (observé)
+        },
+      },
+    },
+  },
+
+  ability: {
+    id: 'emberBurst',
+    name: 'Gerbe de braises',
+    nameRef: 'Ember Burst',
+    cooldown: 3.6,
+    cooldownStep: 0,
+    cooldownFloor: 3.6,
+    burst: { count: 3, spread: 0.55, projectile: 'ember' },
+  },
+
+  ultimate: {
+    id: 'infernalRage',
+    name: 'Rage infernale',
+    nameRef: 'INFERNAL RAGE',
+    barLabel: 'INFERNAL RAGE',
+    barLabelFr: 'RAGE INFERNALE',
+    barFill: '#dc2626',
+    barText: '#fff1f0',
+    chargeRate: 4.4,
+    chargeOnHit: 3,
+    duration: 6,
+    /** Nova de cubes orange à l'incantation (observée image par image). */
+    nova: { count: 90, speed: 460, size: 13, life: 1.1, colors: ['#f97316', '#ea580c', '#fbbf24', '#dc2626'] },
+    /** Ailes de flammes autour du corps pendant toute la durée. */
+    wings: { color: '#f97316', core: '#fbbf24', span: 2.3, flap: 6 },
+    /** Aura brûlante : tout adversaire trop près prend la brûlure. */
+    aura: { radius: 150, tickInterval: 0.6, tickDamage: 2 },
+    speedBonus: 1.2,
+  },
+
+  projectiles: {
+    ember: {
+      label: 'Braise',
+      sprite: 'ember',
+      scale: 3,
+      speed: 520,
+      damage: 3,
+      radius: 11,
+      life: 1.3,
+      bounces: 0,
+      knockback: 90,
+      onHit: { dot: { damage: 1, interval: 1, duration: 2, ring: '#f97316' } },
+      trail: { color: 'rgba(249,115,22,0.45)', every: 0.03, life: 0.3 },
+    },
+  },
+
+  progression: { stack: 1, stack2: 0 },
+
+  hud: {
+    stats: [(f) => `Burn Damage/Duration: ${formatHalf(f.stacks)}`],
+    statsFr: [(f) => `Brûlure — dégâts/durée : ${formatHalf(f.stacks)}`],
+    color: '#e11d1d',
+    stroke: '#0a0a0a',
+  },
+};
+
+/* ==========================================================================
+ *  LUMIÈRE  (LIGHT)
+ *  Relevé : vidéos « LIGHT vs FIRE », « LIGHT vs DARK », « LIGHT vs LIGHTNING ».
+ * ========================================================================== */
+const LIGHT = {
+  id: 'light',
+  name: 'LUMIÈRE',
+  nameRef: 'LIGHT',
+  tagline: 'Forteresse — bouclier qui riposte et marteau qui projette',
+  icon: 'iconShield',
+
+  look: {
+    radius: 41,
+    body: '#fbf7a3', // pipette : rgb(252,251,168)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(250,220,60,0.5)',
+      radius: 1.75,
+      pulse: 1.8,
+      showWhen: 'ultimate-ready',
+    },
+    trail: { color: 'rgba(250,220,60,0.25)', every: 0.05, life: 0.26 },
+    accent: '#eab308',
+  },
+
+  // marteau lourd : la Lumière est le combattant le plus lent du roster
+  movement: { speed: 415, turnRate: 1.6, seek: 0.46, mass: 1 },
+
+  weapon: {
+    name: 'Marteau d’aube',
+    reach: 155, // mesuré : ~159 px
+    spin: SPIN,
+    spinDir: 1,
+    handle: {
+      length: 91,
+      width: 11,
+      color: '#8b8b8b',
+      dark: '#4f4f4f',
+      outline: '#141414',
+      gem: { at: 0.6, size: 9, color: '#f5d020' },
+    },
+    head: { sprite: 'lightHammerHead', scale: 4.6, anchorY: 0.5 },
+    hitbox: { from: 0.58, to: 1, radius: 22 },
+    melee: {
+      damage: 4,
+      cooldown: 1.5, // arme lourde : la cadence la plus lente
+      /** Le recul suit la stat « Knockback » du HUD (1500 → 5400 mesuré). */
+      knockback: (self) => 210 + self.stacks2 * 0.05,
+      selfRecoil: 60,
+      onHit: {
+        stackGain: 1, // « Shield Damage » : 1 → 14 mesuré
+        stackMax: 30,
+        stack2Gain: 300, // « Knockback » : +300 par touche (mesuré)
+        stack2Max: 9000,
+      },
+    },
+  },
+
+  /** Bouclier permanent : absorbe puis riposte. */
+  ability: {
+    id: 'aegis',
+    name: 'Égide',
+    nameRef: 'Aegis',
+    cooldown: 7,
+    cooldownStep: 0,
+    cooldownFloor: 7,
+    shield: {
+      /** Capacité = base + « Shield Damage » : le bouclier grossit avec la stat. */
+      capacity: (self) => 8 + self.stacks * 0.45,
+      /** Régénération après un répit sans encaisser. */
+      regen: 2,
+      regenDelay: 2.6,
+      /** Riposte infligée à l'attaquant quand le bouclier encaisse. */
+      reflect: (self) => Math.max(1, Math.round(self.stacks / 4)),
+      reflectCooldown: 0.9,
+    },
+    /** L'incantation recharge le bouclier et repousse l'adversaire. */
+    pulse: { radius: 190, knockback: 420, damage: 2 },
+  },
+
+  ultimate: {
+    id: 'radiantSnare',
+    name: 'Piège radiant',
+    nameRef: 'RADIANT SNARE',
+    barLabel: 'RADIANT SNARE',
+    barLabelFr: 'PIÈGE RADIANT',
+    barFill: '#f2e04a',
+    barText: '#3f3000',
+    chargeRate: 3.2,
+    chargeOnHit: 3,
+    duration: 5,
+    snare: {
+      color: '#f7d34a',
+      glow: 'rgba(250,220,60,0.55)',
+      width: 7,
+      gap: 5, // double trait doré (observé)
+      /** La cible prend la teinte de la Lumière tant qu'elle est piégée. */
+      tint: '#f8f0b0',
+      slow: 0.55,
+      tickInterval: 0.4,
+      tickDamage: 1,
+      /** Le piège tire la cible vers la Lumière. */
+      pull: 90,
+    },
+  },
+
+  projectiles: {},
+
+  progression: { stack: 1, stack2: 1500 },
+
+  hud: {
+    stats: [
+      (f) => `Shield Damage: ${Math.round(f.stacks)}`,
+      (f) => `Knockback: ${Math.round(f.stacks2)}`,
+    ],
+    statsFr: [
+      (f) => `Dégâts du bouclier : ${Math.round(f.stacks)}`,
+      (f) => `Recul : ${Math.round(f.stacks2)}`,
+    ],
+    color: '#d9b800',
+    stroke: '#0a0a0a',
+  },
+};
+
+/* ==========================================================================
+ *  VENT  (WIND)
+ *  Relevé : vidéo « WIND vs PLANT ».
+ * ========================================================================== */
+const WIND = {
+  id: 'wind',
+  name: 'VENT',
+  nameRef: 'WIND',
+  tagline: 'Harcèlement — le plus rapide, tornades et lames d’air',
+  icon: 'iconTornado',
+
+  look: {
+    radius: 41,
+    body: '#bcbf9e', // pipette : rgb(187,190,158)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(214,205,170,0.55)',
+      radius: 1.6,
+      pulse: 2.6,
+      showWhen: 'ability-ready',
+    },
+    trail: { color: 'rgba(207,198,168,0.3)', every: 0.035, life: 0.3 },
+    accent: '#a89b6f',
+  },
+
+  // le plus rapide et le plus manœuvrant du roster (observé)
+  movement: { speed: 500, turnRate: 2.2, seek: 0.4, mass: 1 },
+
+  weapon: {
+    name: 'Shuriken de bourrasque',
+    reach: 105, // mesuré : ~120 px, arme collée au corps
+    spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
+    spinDir: 1,
+    handle: { length: 45, width: 9, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
+    head: { sprite: 'windShuriken', scale: 4.6, anchorY: 0.5 },
+    hitbox: { from: 0.45, to: 1, radius: 18 },
+    melee: {
+      damage: 2,
+      cooldown: 1, // cadence la plus rapide du roster
+      knockback: 205,
+      selfRecoil: 70,
+      onHit: { slow: 0.12, slowDuration: 1.2 },
+    },
+  },
+
+  /** Tornade : la stat monte et la recharge descend à chaque incantation. */
+  ability: {
+    id: 'tornado',
+    name: 'Tornade',
+    nameRef: 'Tornado',
+    cooldown: 4, // mesuré : 4 s au départ
+    cooldownStep: 0.5, // mesuré : −0,5 s par incantation
+    cooldownFloor: 1, // mesuré : plancher à 1 s
+    tornado: {
+      radius: 115,
+      duration: 2.2,
+      pull: 80,
+      tickInterval: 0.8,
+      /** « Tornado Damage » du HUD, ramené à l'échelle des PV. */
+      tickDamage: (self) => Math.max(1, Math.round(self.stacks / 18)),
+      damageGain: 2, // mesuré : 10 → 22 par pas de 2
+      damageMax: 24, // plafond observé en fin de duel
+      color: 'rgba(198,186,150,0.42)',
+      edge: 'rgba(150,138,105,0.55)',
+    },
+  },
+
+  ultimate: {
+    id: 'tempestVolley',
+    name: 'Salve de tempête',
+    nameRef: 'TEMPEST VOLLEY',
+    barLabel: 'TEMPEST VOLLEY',
+    barLabelFr: 'SALVE DE TEMPÊTE',
+    barFill: '#b9b295',
+    barText: '#2a2518',
+    chargeRate: 5,
+    chargeOnHit: 2,
+    duration: 4.5,
+    volley: { interval: 0.7, count: 2, spread: 0.9, projectile: 'crescent' },
+    speedBonus: 1.25,
+  },
+
+  projectiles: {
+    crescent: {
+      label: 'Lame d’air',
+      sprite: 'windCrescent',
+      scale: 3,
+      speed: 430,
+      damage: 1,
+      radius: 12,
+      life: 2.2,
+      bounces: 1,
+      knockback: 80,
+      trail: { color: 'rgba(207,198,168,0.4)', every: 0.04, life: 0.32 },
+    },
+  },
+
+  progression: { stack: 10, stack2: 0 },
+
+  hud: {
+    stats: [
+      (f) => `Tornado Damage: ${Math.round(f.stacks)}`,
+      (f) => `Cooldown: ${formatSeconds(f.ability.cooldown)}`,
+    ],
+    statsFr: [
+      (f) => `Dégâts de tornade : ${Math.round(f.stacks)}`,
+      (f) => `Recharge : ${formatSeconds(f.ability.cooldown)}`,
+    ],
+    color: '#8a8163',
+    stroke: '#0a0a0a',
+  },
+};
+
+/* ==========================================================================
+ *  FOUDRE  (LIGHTNING)
+ *  Relevé : vidéo « LIGHT vs LIGHTNING ».
+ * ========================================================================== */
+const LIGHTNING = {
+  id: 'lightning',
+  name: 'FOUDRE',
+  nameRef: 'LIGHTNING',
+  tagline: 'Zone — sème des bornes statiques et enchaîne les arcs',
+  icon: 'iconBolt',
+
+  look: {
+    radius: 41,
+    body: '#f2f003', // pipette : rgb(242,240,3)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(56,189,248,0.5)', // halo cyan des arcs (observé)
+      radius: 1.65,
+      pulse: 4,
+      showWhen: 'ultimate-ready',
+    },
+    trail: { color: 'rgba(125,211,252,0.28)', every: 0.045, life: 0.24 },
+    accent: '#38bdf8',
+  },
+
+  movement: { speed: 500, turnRate: 2, seek: 0.42, mass: 1 },
+
+  weapon: {
+    name: 'Lame fulgurante',
+    reach: 145,
+    spin: SPIN,
+    spinDir: -1,
+    handle: { length: 73, width: 10, color: '#8a6d3a', dark: '#513f21', outline: '#1b1408', gem: null },
+    head: { sprite: 'boltBlade', scale: 4.5, anchorY: 0.5 },
+    hitbox: { from: 0.52, to: 1, radius: 17 },
+    melee: {
+      damage: 3,
+      cooldown: 1,
+      knockback: 230,
+      selfRecoil: 80,
+      onHit: {
+        stackGain: 0.5, // « Chain Damage » : 1 → 4,5 mesuré
+        stackMax: 14,
+        /** Chaque touche plante une borne à l'impact (observé). */
+        dropNode: true,
+      },
+    },
+  },
+
+  ability: {
+    id: 'staticNode',
+    name: 'Borne statique',
+    nameRef: 'Static Node',
+    cooldown: 3,
+    cooldownStep: 0,
+    cooldownFloor: 3,
+    node: {
+      max: 8, // au-delà, la plus ancienne disparaît
+      life: 16,
+      sprite: 'teslaNode',
+      scale: 3,
+    },
+    chain: {
+      interval: 1.6, // cadence des décharges hors ultime
+      range: 270, // portée borne → cible
+      color: 'rgba(103,232,249,0.95)',
+      glow: 'rgba(56,189,248,0.45)',
+      width: 4,
+      jitter: 14,
+      life: 0.28,
+      slow: 0.18,
+      slowDuration: 0.8,
+    },
+  },
+
+  ultimate: {
+    id: 'supercharge',
+    name: 'Surcharge',
+    nameRef: 'SUPERCHARGE',
+    barLabel: 'SUPERCHARGE',
+    barLabelFr: 'SURCHARGE',
+    barFill: '#f5e60a',
+    barText: '#3a2c05',
+    chargeRate: 5.2,
+    chargeOnHit: 2,
+    duration: 5,
+    chainInterval: 0.5, // le réseau crépite en continu
+    rangeBonus: 1.5,
+    speedBonus: 1.15,
+  },
+
+  projectiles: {},
+
+  progression: { stack: 1, stack2: 0 },
+
+  hud: {
+    stats: [(f) => `Chain Damage: ${formatHalf(f.stacks)}`],
+    statsFr: [(f) => `Dégâts de chaîne : ${formatHalf(f.stacks)}`],
+    color: '#d4c800',
+    stroke: '#0a0a0a',
+  },
+};
+
+/* ==========================================================================
+ *  EAU  (WATER)
+ *  Relevé : vidéo « FIRE vs WATER ».
+ * ========================================================================== */
+const WATER = {
+  id: 'water',
+  name: 'EAU',
+  nameRef: 'WATER',
+  tagline: 'Contrôle de terrain — des tourbillons qui aspirent et grandissent',
+  icon: 'iconDroplet',
+
+  look: {
+    radius: 41,
+    body: '#4a86f7', // pipette : rgb(67,132,255)
+    bodyHit: '#ffffff',
+    outline: '#0a0a0a',
+    outlineWidth: 5,
+    hpColor: '#0a0a0a',
+    hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
+    hpOffsetY: 12,
+    aura: {
+      color: 'rgba(59,130,246,0.45)',
+      radius: 1.65,
+      pulse: 1.6,
+      showWhen: 'ultimate-ready',
+    },
+    trail: { color: 'rgba(96,165,250,0.3)', every: 0.045, life: 0.3 },
+    accent: '#2563eb',
+  },
+
+  movement: { speed: 455, turnRate: 1.8, seek: 0.45, mass: 1 },
+
+  weapon: {
+    name: 'Trident des marées',
+    reach: 150,
+    spin: SPIN,
+    spinDir: 1,
+    handle: { length: 102, width: 11, color: '#3f6fa8', dark: '#254365', outline: '#0b2545', gem: { at: 0.5, size: 8, color: '#93c5fd' } },
+    head: { sprite: 'waterTrident', scale: 4, anchorY: 0.5 },
+    hitbox: { from: 0.6, to: 1, radius: 19 },
+    melee: {
+      damage: 3,
+      cooldown: 1.1,
+      knockback: 250,
+      selfRecoil: 80,
+      onHit: {
+        stackGain: 1, // « Whirlpool Damage » : 1 → 7 mesuré
+        stackMax: 14,
+        stack2Gain: 5, // « Size » : 70 → 100 mesuré
+        stack2Max: 100,
+      },
+    },
+  },
+
+  ability: {
+    id: 'whirlpool',
+    name: 'Tourbillon',
+    nameRef: 'Whirlpool',
+    cooldown: 6,
+    cooldownStep: 0,
+    cooldownFloor: 6,
+    whirlpool: {
+      max: 2, // deux tourbillons simultanés au plus
+      life: 7.5,
+      /** Rayon piloté par la stat « Size » du HUD. */
+      radius: (self) => self.stacks2 * 0.9,
+      pull: 60,
+      tickInterval: 1.2,
+      tickDamage: (self) => Math.max(1, Math.round(self.stacks * 0.6)),
+      fill: 'rgba(96,165,250,0.30)',
+      edge: 'rgba(37,99,235,0.55)',
+      arms: 3,
+      spin: 2.2,
+    },
+    /** Chaque tourbillon crache des gouttes. */
+    spray: { interval: 1.8, count: 1, projectile: 'droplet' },
+  },
+
+  ultimate: {
+    id: 'maelstrom',
+    name: 'Maelström',
+    nameRef: 'MAELSTROM',
+    barLabel: 'MAELSTROM',
+    barLabelFr: 'MAELSTRÖM',
+    barFill: '#4a86f7',
+    barText: '#eff6ff',
+    chargeRate: 4.2,
+    chargeOnHit: 3,
+    duration: 5.5,
+    maelstrom: {
+      radius: 200,
+      pull: 170,
+      tickInterval: 0.8,
+      tickDamage: (self) => Math.max(2, Math.round(self.stacks)),
+      spin: 3.4,
+      arms: 3,
+      fill: 'rgba(59,130,246,0.34)',
+      edge: 'rgba(29,78,216,0.7)',
+    },
+  },
+
+  projectiles: {
+    droplet: {
+      label: 'Goutte',
+      sprite: 'waterDrop',
+      scale: 3,
+      speed: 330,
+      damage: 1,
+      radius: 9,
+      life: 2,
+      bounces: 1,
+      knockback: 45,
+      trail: { color: 'rgba(147,197,253,0.5)', every: 0.04, life: 0.35, dotted: true },
+    },
+  },
+
+  progression: { stack: 1, stack2: 70 },
+
+  hud: {
+    stats: [
+      (f) => `Whirlpool Damage: ${Math.round(f.stacks)}`,
+      (f) => `Size: ${Math.round(f.stacks2)}`,
+    ],
+    statsFr: [
+      (f) => `Dégâts du tourbillon : ${Math.round(f.stacks)}`,
+      (f) => `Taille : ${Math.round(f.stacks2)}`,
+    ],
+    color: '#2f6fe0',
+    stroke: '#0a0a0a',
+  },
+};
+
 /** Formatage « 3s » / « 2.4s » identique à la vidéo. */
 function formatSeconds(v) {
   const r = Math.round(v * 10) / 10;
   return Number.isInteger(r) ? `${r}s` : `${r.toFixed(1)}s`;
 }
 
-export const ELEMENTS = deepFreeze({ shadow: SHADOW, ice: ICE });
+/** Formatage « 4 » / « 4.5 » des stats à demi-pas. */
+function formatHalf(v) {
+  const r = Math.round(v * 10) / 10;
+  return Number.isInteger(r) ? `${r}` : r.toFixed(1);
+}
+
+export const ELEMENTS = deepFreeze({
+  shadow: SHADOW,
+  ice: ICE,
+  fire: FIRE,
+  light: LIGHT,
+  wind: WIND,
+  lightning: LIGHTNING,
+  water: WATER,
+});
 
 /** Ordre d'affichage dans l'écran de sélection. */
-export const ROSTER = deepFreeze(['shadow', 'ice']);
+export const ROSTER = deepFreeze(['shadow', 'ice', 'fire', 'water', 'light', 'lightning', 'wind']);
 
 /** @param {string} id */
 export function getElement(id) {

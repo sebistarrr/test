@@ -8,13 +8,27 @@ Tu peux remplacer n'importe lequel par un PNG, sans toucher au code du moteur.
 
 ## 1. Préparer le PNG
 
-| Clé            | Rôle                                   | Taille conseillée | Orientation                |
-| -------------- | -------------------------------------- | ----------------- | -------------------------- |
-| `darkBlade`    | lame de l'Ombre (et ses projectiles)   | 80 × 36 px        | **pointe vers la droite**  |
-| `iceAxeHead`   | tête de hache de la Glace              | 48 × 68 px        | tranchant vers la droite   |
-| `iceShard`     | éclat de givre (projectile)            | 32 × 44 px        | pointe vers la droite      |
-| `orbDark`      | icône du titre (Ombre)                 | 64 × 64 px        | —                          |
-| `snowflake`    | icône du titre (Glace)                 | 64 × 64 px        | —                          |
+| Clé                | Rôle                                    | Taille conseillée | Orientation               |
+| ------------------ | --------------------------------------- | ----------------- | ------------------------- |
+| `darkBlade`        | lame de l'Ombre (et ses projectiles)    | 80 × 36 px        | **pointe vers la droite** |
+| `iceAxeHead`       | tête de hache de la Glace               | 48 × 68 px        | tranchant vers la droite  |
+| `fireBlade`        | lame de flamme du Feu                   | 72 × 40 px        | pointe vers la droite     |
+| `lightHammerHead`  | tête de marteau de la Lumière           | 56 × 68 px        | —                         |
+| `windShuriken`     | shuriken du Vent                        | 52 × 52 px        | —                         |
+| `boltBlade`        | lame-éclair de la Foudre                | 64 × 48 px        | pointe vers la droite     |
+| `waterTrident`     | tête de trident de l'Eau                | 48 × 60 px        | dents vers la droite      |
+| `iceShard`         | éclat de givre (projectile)             | 32 × 44 px        | pointe vers la droite     |
+| `ember`            | braise du Feu (projectile)              | 28 × 28 px        | —                         |
+| `windCrescent`     | lame d'air (projectile)                 | 36 × 42 px        | pointe vers la droite     |
+| `waterDrop`        | goutte (projectile)                     | 24 × 32 px        | pointe vers la droite     |
+| `teslaNode`        | borne statique de la Foudre             | 36 × 44 px        | —                         |
+| `orbDark`          | icône du titre (Ombre)                  | 64 × 64 px        | —                         |
+| `snowflake`        | icône du titre (Glace)                  | 64 × 64 px        | —                         |
+| `iconFlame`        | icône du titre (Feu)                    | 64 × 64 px        | —                         |
+| `iconShield`       | icône du titre (Lumière)                | 64 × 64 px        | —                         |
+| `iconTornado`      | icône du titre (Vent)                   | 64 × 64 px        | —                         |
+| `iconBolt`         | icône du titre (Foudre)                 | 64 × 64 px        | —                         |
+| `iconDroplet`      | icône du titre (Eau)                    | 64 × 64 px        | —                         |
 
 Règles :
 

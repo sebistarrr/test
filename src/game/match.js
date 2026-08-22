@@ -118,9 +118,17 @@ export class Match {
       mod.update(f, dt, this.time, this);
     }
 
-    this.projectiles.update(dt, this.time, this.fighters, (target, amount, source, opts) =>
-      this.damage(target, amount, source, opts),
-    );
+    // dégâts sur la durée (brûlure…) : tout passe par damage()
+    for (const f of this.fighters) this.tickDots(f, dt);
+
+    this.projectiles.update(dt, this.time, this.fighters, (target, amount, source, opts) => {
+      this.damage(target, amount, source, opts);
+      // effets décrits par le projectile lui-même (brûlure d'une braise…)
+      const onHit = opts.def?.onHit;
+      if (!onHit || !target.alive) return;
+      if (onHit.slow) target.applySlow(onHit.slow, onHit.slowDuration ?? 1.5, this.time);
+      if (onHit.dot) target.applyDot({ ...onHit.dot, source }, this.time);
+    });
     this.fx.update(dt);
 
     if (this.phase === 'fight') this.stats.duration = this.time;
@@ -131,13 +139,30 @@ export class Match {
     this.phaseTime = 0;
   }
 
+  /** @param {Fighter} f */
+  tickDots(f, dt) {
+    if (!f.alive || !f.dots.length) return;
+    for (const d of f.dots) {
+      if (d.until <= this.time) continue;
+      d.timer -= dt;
+      if (d.timer > 0) continue;
+      d.timer = d.interval;
+      this.damage(f, d.damage, d.source, { kind: 'dot', silent: true });
+      if (d.ring) {
+        this.fx.burst(f.x, f.y, 3, { color: d.ring, speed: 70, size: 4, life: 0.35 });
+      }
+    }
+  }
+
   /** @param {Fighter} attacker @param {Fighter} target */
   resolveMelee(attacker, target) {
     const hit = weaponHit(attacker, target);
     if (!hit) return;
 
     const melee = attacker.el.weapon.melee;
+    // dégâts et recul peuvent dépendre des stats évolutives du combattant
     const dmg = typeof melee.damage === 'function' ? melee.damage(attacker) : melee.damage;
+    const kb = typeof melee.knockback === 'function' ? melee.knockback(attacker) : melee.knockback;
 
     attacker.meleeCd = melee.cooldown;
     this.damage(target, dmg, attacker, {
@@ -146,20 +171,41 @@ export class Match {
       y: hit.y,
       nx: hit.nx,
       ny: hit.ny,
-      knockback: melee.knockback,
+      knockback: kb,
     });
 
     // recul de l'attaquant (il repart en arrière, observé sur la vidéo)
     attacker.push(-hit.nx, -hit.ny, melee.selfRecoil);
 
-    // effets à la touche décrits dans la fiche (piles de la Glace, etc.)
-    if (melee.onHit) {
-      if (melee.onHit.stackGain) attacker.stacks += melee.onHit.stackGain;
-      if (melee.onHit.slowPerStack) {
-        const slow = Math.min(melee.onHit.slowMax, attacker.stacks * melee.onHit.slowPerStack);
-        target.applySlow(slow, melee.onHit.slowDuration, this.time);
+    // effets à la touche décrits dans la fiche (piles, brûlure, marquage…)
+    const onHit = melee.onHit;
+    if (onHit) {
+      if (onHit.stackGain) attacker.stacks += onHit.stackGain;
+      if (onHit.stack2Gain) attacker.stacks2 += onHit.stack2Gain;
+      if (onHit.stackMax) attacker.stacks = Math.min(attacker.stacks, onHit.stackMax);
+      if (onHit.stack2Max) attacker.stacks2 = Math.min(attacker.stacks2, onHit.stack2Max);
+      if (onHit.slowPerStack) {
+        const slow = Math.min(onHit.slowMax, attacker.stacks * onHit.slowPerStack);
+        target.applySlow(slow, onHit.slowDuration, this.time);
+      }
+      if (onHit.slow) target.applySlow(onHit.slow, onHit.slowDuration ?? 1.5, this.time);
+      if (onHit.dot) {
+        target.applyDot(
+          {
+            damage: typeof onHit.dot.damage === 'function' ? onHit.dot.damage(attacker) : onHit.dot.damage,
+            interval: onHit.dot.interval,
+            duration:
+              typeof onHit.dot.duration === 'function' ? onHit.dot.duration(attacker) : onHit.dot.duration,
+            source: attacker,
+            ring: onHit.dot.ring ?? null,
+          },
+          this.time,
+        );
       }
     }
+
+    // le module de pouvoirs de l'attaquant peut réagir à sa propre touche
+    this.modules.get(attacker)?.onLand?.(attacker, target, hit, this);
   }
 
   /**
@@ -170,7 +216,14 @@ export class Match {
     if (!target.alive || this.phase === 'over') return;
     if (target.invulnerable > 0 && opts.kind !== 'tether') return;
 
-    const amt = Math.max(0, Math.round(amount));
+    let amt = Math.max(0, Math.round(amount * this.damageScale()));
+
+    // le module de la cible peut absorber tout ou partie des dégâts
+    // (bouclier de la Lumière) avant qu'ils ne touchent les PV
+    const targetMod = this.modules.get(target);
+    if (targetMod?.onDamage) amt = Math.max(0, Math.round(targetMod.onDamage(target, amt, source, opts, this)));
+    if (amt === 0 && opts.kind !== 'melee') return;
+
     target.hp = Math.max(0, target.hp - amt);
     target.flash = PHYSICS.hitFlash;
 
@@ -199,6 +252,13 @@ export class Match {
     }
 
     if (target.hp <= 0) this.knockout(target, source);
+  }
+
+  /** Facteur de mort subite (1 avant le seuil, croissant ensuite). */
+  damageScale() {
+    const sd = MATCH.suddenDeath;
+    if (this.time <= sd.after) return 1;
+    return Math.min(sd.max, 1 + (this.time - sd.after) / sd.ramp);
   }
 
   knockout(loser, winner) {

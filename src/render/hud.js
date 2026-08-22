@@ -55,18 +55,32 @@ function drawBar(ctx, f, side, value, lang) {
   });
 }
 
+/**
+ * Une ou deux lignes de statistiques selon l'élément.
+ * La fiche expose `stat`/`statFr` (une ligne) ou `stats`/`statsFr`
+ * (tableau de fonctions), sans que le HUD ait à connaître les éléments.
+ */
 function drawStat(ctx, f, side, lang) {
   const s = HUD.stat;
   const hud = f.el.hud;
-  const text = lang === 'fr' ? hud.statFr(f) : hud.stat(f);
+  const fns = lang === 'fr' ? hud.statsFr ?? hud.stats : hud.stats;
+  const lines = fns
+    ? fns.map((fn) => fn(f))
+    : [lang === 'fr' ? hud.statFr(f) : hud.stat(f)];
+
   ctx.font = STAT_FONT;
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = side === 'left' ? 'left' : 'right';
-  // chaque ligne dispose d'une moitié du bandeau, avec une gouttière centrale
+  // chaque colonne dispose d'une moitié du bandeau, avec une gouttière centrale
   const maxWidth = (s.rightX - s.leftX) / 2 - 12;
-  drawFittedText(ctx, text, side === 'left' ? s.leftX : s.rightX, s.baseline, maxWidth, {
-    fill: hud.color,
-    stroke: hud.stroke,
-    strokeWidth: s.strokeWidth,
+  lines.forEach((text, i) => {
+    drawFittedText(
+      ctx,
+      text,
+      side === 'left' ? s.leftX : s.rightX,
+      s.baseline + i * s.lineHeight,
+      maxWidth,
+      { fill: hud.color, stroke: hud.stroke, strokeWidth: s.strokeWidth },
+    );
   });
 }

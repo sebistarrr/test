@@ -68,9 +68,12 @@ export const HUD = deepFreeze({
     labelSize: 22,
     labelPad: 8,
   },
-  // Ligne de statistique sous les jauges : glyphes 1005→1038
+  // Lignes de statistique sous les jauges : glyphes 1005→1038.
+  // Certains éléments en affichent deux (Lumière : dégâts + recul,
+  // Eau : dégâts + taille) — interligne mesuré sur ces vidéos : 31 px.
   stat: {
     baseline: 1036,
+    lineHeight: 31,
     fontSize: 30,
     leftX: 39,
     rightX: 681,
@@ -101,6 +104,12 @@ export const MATCH = deepFreeze({
   /** Ralenti + explosion au K.O. avant l'écran de résultat. */
   koDuration: 1.8,
   koSlowmo: 0.25,
+  /**
+   * Mort subite : au-delà de `after`, tous les dégâts sont amplifiés
+   * progressivement. Garantit qu'aucun duel ne s'éternise, y compris entre
+   * deux combattants très défensifs (miroir Lumière contre Lumière).
+   */
+  suddenDeath: { after: 55, ramp: 18, max: 4 },
   /** Positions de départ mesurées sur la première image (fractions d'arène). */
   spawn: [
     { x: 0.29, y: 0.5, heading: -0.35 },

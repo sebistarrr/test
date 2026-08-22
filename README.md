@@ -1,11 +1,25 @@
-# Elemental Duel — Ombre vs Glace
+# Elemental Duel — sept éléments, un duel
 
-Clone haute fidélité du duel d'éléments de la vidéo de référence
+Clone haute fidélité des duels d'éléments de la chaîne de référence
 (*Elemental Armory League*), en **HTML + CSS + JavaScript** avec un rendu
 **Canvas 2D**. Aucune dépendance, aucun build : le dépôt se publie tel quel sur
 GitHub Pages.
 
-![écran de duel](docs/capture-duel.png)
+**Sept éléments jouables**, chacun relevé sur sa propre vidéo :
+
+| Élément | Arme | Signature | Ultime |
+| --- | --- | --- | --- |
+| **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme + drain) |
+| **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
+| **Feu** | Lame ardente | brûlure qui s'aggrave | Rage infernale (nova + ailes) |
+| **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
+| **Lumière** | Marteau d'aube | bouclier qui riposte, recul énorme | Piège radiant (trait doré) |
+| **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
+| **Vent** | Shuriken de bourrasque | le plus rapide, tornades | Salve de tempête |
+
+![Lumière contre Feu](docs/capture-duel.png)
+
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
 
 ---
 
@@ -19,19 +33,20 @@ python3 -m http.server 8080
 
 ### Publier sur GitHub Pages
 
-1. Pousse la branche.
-2. *Settings → Pages → Build and deployment → Deploy from a branch*,
-   branche = la tienne, dossier = `/ (root)`.
-3. Le fichier `.nojekyll` (déjà présent) empêche Jekyll d'ignorer les dossiers.
+Le dépôt est configuré en *Settings → Pages → Source = GitHub Actions* : chaque
+push sur `main` déclenche `.github/workflows/pages.yml`, qui publie la racine
+telle quelle (site en ligne : <https://sebistarrr.github.io/test/>). Le workflow
+se lance aussi à la main depuis l'onglet *Actions*.
 
-Un workflow optionnel est fourni dans `.github/workflows/pages.yml`
-(déclenchement manuel par défaut).
+Pour un déploiement « depuis une branche » plutôt que par Actions, choisis la
+branche et le dossier `/ (root)` : le fichier `.nojekyll` (déjà présent)
+empêche Jekyll d'ignorer les dossiers.
 
 ### Paramètres d'URL
 
 | Paramètre    | Effet                                                             |
 | ------------ | ----------------------------------------------------------------- |
-| `?a=&b=`     | lance directement un duel (`shadow`, `ice`) sans écran de sélection |
+| `?a=&b=`     | lance directement un duel sans écran de sélection — `shadow`, `ice`, `fire`, `water`, `light`, `lightning`, `wind` |
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | HUD en français (par défaut : libellés anglais de la vidéo)        |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
@@ -76,8 +91,14 @@ src/
 │   ├── projectiles.js     projectiles génériques pilotés par la fiche
 │   └── abilities/
 │       ├── index.js       registre
+│       ├── zone.js        helper des zones (tornade, tourbillon, maelström)
 │       ├── shadow.js      Pas d'ombre + Lien d'essence
-│       └── ice.js         Éclats de givre + Blizzard
+│       ├── ice.js         Éclats de givre + Blizzard
+│       ├── fire.js        Gerbe de braises + Rage infernale
+│       ├── light.js       Égide (bouclier/riposte) + Piège radiant
+│       ├── wind.js        Tornade + Salve de tempête
+│       ├── lightning.js   Bornes statiques + Surcharge
+│       └── water.js       Tourbillon + Maelström
 └── ui/
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
@@ -136,11 +157,17 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Champ de Blizzard             | rayon ≈ 130 px                    |
 | Progression « Shadow Step Cooldown » | 3 s → 0,7 s par paliers de 0,2 s |
 | Progression « Damage/Slow »   | 1 → 13 sur un duel d'une minute   |
+| Progression « Burn Damage/Duration » | 1 → 5,5 par pas de 0,5     |
+| Progression « Shield Damage » / « Knockback » | 1 → 14 / 1500 → 5400 (+300 par touche) |
+| Progression « Tornado Damage » / « Cooldown » | 10 → 22 (+2) / 4 s → 1 s (−0,5 s) |
+| Progression « Chain Damage »  | 1 → 4,5 par pas de 0,5            |
+| Progression « Whirlpool Damage » / « Size » | 1 → 7 / 70 → 100    |
 
-Le rythme est calé pour retrouver ces deux compteurs en fin de duel :
-sur 12 seeds, un duel dure **45 à 56 s**, la Glace finit à **12-13 piles** et
-l'Ombre atteint le plancher de **0,7 s**. Les deux éléments gagnent à peu près
-autant l'un que l'autre.
+Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
+**28 affrontements possibles** (3 seeds chacun), un duel dure **21 à 55 s**,
+la Glace finit à 12-13 piles et l'Ombre atteint son plancher de 0,7 s. Une
+**mort subite** amplifie les dégâts au-delà de 55 s pour qu'aucun duel ne
+s'éternise. Détail de l'équilibrage dans [`docs/FICHES.md`](docs/FICHES.md).
 
 ---
 

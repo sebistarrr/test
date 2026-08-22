@@ -151,11 +151,351 @@ export const SNOWFLAKE = deepFreeze({
   ],
 });
 
+/* ==================================================================
+ *  ARMES DES CINQ NOUVEAUX ÉLÉMENTS
+ *  (relevées sur les vidéos LIGHT vs FIRE, WIND vs PLANT,
+ *   LIGHT vs LIGHTNING et FIRE vs WATER)
+ * ================================================================== */
+
+/** FEU — lame de flamme : cœur blanc, corps orange, liseré rouge sombre. */
+export const FIRE_BLADE = deepFreeze({
+  w: 18,
+  h: 10,
+  palette: {
+    K: '#2a0d02',
+    o: '#f2670c', // orange
+    y: '#fbbf24', // jaune
+    w: '#fff4c4', // cœur incandescent
+  },
+  rows: [
+    '.....KKKKKK.......',
+    '...KKoooooKKKK....',
+    '..KooyyyyyoooKKK..',
+    '.KoyywwwwwyyyooKK.',
+    'KoyywwwwwwwwyyyooK',
+    'KoyywwwwwwwwyyyooK',
+    '.KoyywwwwwyyyooKK.',
+    '..KooyyyyyoooKKK..',
+    '...KKoooooKKKK....',
+    '.....KKKKKK.......',
+  ],
+});
+
+/** LUMIÈRE — tête de marteau : bloc doré à panneau clair. */
+export const LIGHT_HAMMER_HEAD = deepFreeze({
+  w: 14,
+  h: 17,
+  palette: {
+    K: '#2a2007',
+    g: '#e0bd1e', // or
+    l: '#fdf6b8', // panneau clair
+  },
+  rows: [
+    '..KKKKKKKKKK..',
+    '.KggggggggggK.',
+    'KggggggggggggK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KgllllllllllgK',
+    'KggggggggggggK',
+    '.KggggggggggK.',
+    '..KKKKKKKKKK..',
+  ],
+});
+
+/** VENT — shuriken en losange évidé, collé au corps (manche très court). */
+export const WIND_SHURIKEN = deepFreeze({
+  w: 13,
+  h: 13,
+  palette: {
+    K: '#3a3016',
+    t: '#d9c89a', // tan
+    l: '#f4ecd2', // reflet
+  },
+  rows: [
+    '......K......',
+    '.....KtK.....',
+    '....KtltK....',
+    '...KttKttK...',
+    '..KttK.KttK..',
+    '.KttK...KttK.',
+    'KltK.....KtlK',
+    '.KttK...KttK.',
+    '..KttK.KttK..',
+    '...KttKttK...',
+    '....KtltK....',
+    '.....KtK.....',
+    '......K......',
+  ],
+});
+
+/** FOUDRE — lame en éclair. */
+export const BOLT_BLADE = deepFreeze({
+  w: 16,
+  h: 12,
+  palette: {
+    K: '#3a2c05',
+    y: '#f5e60a',
+    w: '#fffbb0',
+  },
+  rows: [
+    '..........KKKK..',
+    '.........KyyyK..',
+    '........KyyyKK..',
+    '.....KKKyyyK....',
+    '...KKyyyyyyK....',
+    '.KKKyywwwyyyKKKK',
+    'KyywwwwwyyyyyyyK',
+    '.KKKyywwwyyyKKKK',
+    '...KKyyyyyyK....',
+    '.....KKKyyyK....',
+    '........KyyyKK..',
+    '.........KKKK...',
+  ],
+});
+
+/** EAU — tête de trident à trois dents. */
+export const WATER_TRIDENT = deepFreeze({
+  w: 12,
+  h: 15,
+  palette: {
+    K: '#0b2545',
+    b: '#7fb2f0', // bleu clair
+    w: '#dbeafe', // reflet
+  },
+  rows: [
+    '.....KKKKKK.',
+    '.....KbbbbK.',
+    '.KKKKKbwbKK.',
+    '.KbbbbbbbK..',
+    '.KbbKKKKK...',
+    '.KbbK.......',
+    '.KbbKKKKKKK.',
+    '.KbwbbbbbbbK',
+    '.KbbKKKKKKK.',
+    '.KbbK.......',
+    '.KbbKKKKK...',
+    '.KbbbbbbbK..',
+    '.KKKKKbwbKK.',
+    '.....KbbbbK.',
+    '.....KKKKKK.',
+  ],
+});
+
+/* ---------------- projectiles ---------------- */
+
+/** FEU — braise. */
+export const EMBER = deepFreeze({
+  w: 7,
+  h: 7,
+  palette: { K: '#2a0d02', o: '#f2670c', y: '#fbbf24', w: '#fff4c4' },
+  rows: ['..KKK..', '.KoyoK.', 'KoywyoK', 'KywwwyK', 'KoywyoK', '.KoyoK.', '..KKK..'],
+});
+
+/** VENT — croissant de lame d'air, sans contour (dégradé doux comme la vidéo). */
+export const WIND_CRESCENT = deepFreeze({
+  w: 12,
+  h: 14,
+  palette: { d: '#b3a887', t: '#cfc6a8', l: '#eee7d0' },
+  rows: [
+    '.......ddd..',
+    '.....ddtttd.',
+    '....dtttlttd',
+    '...dtttl..tt',
+    '..dtttl....t',
+    '..dttl......',
+    '..dtt.......',
+    '..dtt.......',
+    '..dttl......',
+    '..dtttl....t',
+    '...dtttl..tt',
+    '....dtttlttd',
+    '.....ddtttd.',
+    '.......ddd..',
+  ],
+});
+
+/** EAU — gouttelette projetée par les tourbillons. */
+export const WATER_DROP = deepFreeze({
+  w: 6,
+  h: 8,
+  palette: { K: '#0b2545', b: '#5a9bef', w: '#dbeafe' },
+  rows: ['..KK..', '.KbbK.', '.KbbK.', 'KbwbbK', 'KbwbbK', 'KbbbbK', '.KbbK.', '..KK..'],
+});
+
+/** FOUDRE — borne statique posée dans l'arène (relais des chaînes). */
+export const TESLA_NODE = deepFreeze({
+  w: 9,
+  h: 11,
+  palette: { K: '#1e3a4c', b: '#7dd3fc', w: '#ffffff' },
+  rows: [
+    '....K....',
+    '...KwK...',
+    '..KwbwK..',
+    '.KbwbwbK.',
+    'KbwbbbwbK',
+    '.KbbbbbK.',
+    '..KbbbK..',
+    '.KbbbbbK.',
+    '..KbbbK..',
+    '.KKKKKKK.',
+    '..KKKKK..',
+  ],
+});
+
+/* ---------------- icônes de titre ---------------- */
+
+export const ICON_FLAME = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#2a0d02', o: '#f2670c', y: '#fbbf24', w: '#fff4c4' },
+  rows: [
+    '.......KK.......',
+    '......KooK......',
+    '.....KoyyoK.....',
+    '....KoyyyyoK....',
+    '....KoyywyoK....',
+    '...KooywwwyoK...',
+    '...KoyywwwyyoK..',
+    '..KooywwwwwyooK.',
+    '..KoyywwwwwyyoK.',
+    '.KooywwwwwwwyoK.',
+    '.KoyywwwwwwwyoK.',
+    '.KoyywwwwwwwyoK.',
+    '.KooyywwwwwyyoK.',
+    '..KooyywwwyyooK.',
+    '...KKooyyyyooK..',
+    '.....KKKKKKKK...',
+  ],
+});
+
+export const ICON_SHIELD = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#2a2007', g: '#e0bd1e', l: '#fdf6b8', w: '#ffffff' },
+  rows: [
+    '..KKKKKKKKKKKK..',
+    '.KggggggggggggK.',
+    '.KgllllllllllgK.',
+    '.KgllwwwwwwllgK.',
+    '.KgllwwwwwwllgK.',
+    '.KgllllwwllllgK.',
+    '.KgllllwwllllgK.',
+    '.KgllllwwllllgK.',
+    '..KgllllllllgK..',
+    '..KgllllllllgK..',
+    '...KgllllllgK...',
+    '....KgllllgK....',
+    '.....KgllgK.....',
+    '......KggK......',
+    '.......KK.......',
+    '................',
+  ],
+});
+
+export const ICON_TORNADO = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#3a3016', t: '#d9c89a' },
+  rows: [
+    '..KKKKKKKKKKKK..',
+    '.KttttttttttttK.',
+    '..KKttttttttKK..',
+    '...KttttttttK...',
+    '....KKtttttK....',
+    '.....KtttttK....',
+    '.....KKtttKK....',
+    '......KtttK.....',
+    '......KKtKK.....',
+    '.......KtK......',
+    '.......KtK......',
+    '........K.......',
+    '................',
+    '................',
+    '................',
+    '................',
+  ],
+});
+
+export const ICON_BOLT = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#3a2c05', y: '#f5e60a', w: '#fffbb0' },
+  rows: [
+    '.........KKKK...',
+    '........KyyyK...',
+    '.......KyyyK....',
+    '......KyyyK.....',
+    '.....KyyyKKKKK..',
+    '....KyyyyyyyyK..',
+    '...KyywwwwyyyK..',
+    '..KKyywwwwyyKK..',
+    '..KyyywwwyyK....',
+    '..KKKyyyyyK.....',
+    '....KyyyyK......',
+    '...KyyyyK.......',
+    '..KyyyK.........',
+    '..KyyK..........',
+    '..KKK...........',
+    '................',
+  ],
+});
+
+export const ICON_DROPLET = deepFreeze({
+  w: 16,
+  h: 16,
+  palette: { K: '#0b2545', b: '#5a9bef', w: '#dbeafe' },
+  rows: [
+    '.......KK.......',
+    '......KbbK......',
+    '......KbbK......',
+    '.....KbbbbK.....',
+    '.....KbbbbK.....',
+    '....KbbwbbbK....',
+    '....KbwwbbbK....',
+    '...KbbwwbbbbK...',
+    '...KbbwwbbbbK...',
+    '..KbbbwwbbbbbK..',
+    '..KbbbwwbbbbbK..',
+    '..KbbbwwbbbbbK..',
+    '...KbbbwbbbbK...',
+    '....KbbbbbbK....',
+    '.....KKbbKK.....',
+    '.......KK.......',
+  ],
+});
+
 /** Table des sprites : clé → description. Les clés servent aux overrides PNG. */
 export const PIXEL_MAPS = deepFreeze({
+  // Ombre & Glace
   darkBlade: DARK_BLADE,
   iceAxeHead: ICE_AXE_HEAD,
   iceShard: ICE_SHARD,
   orbDark: ORB_DARK,
   snowflake: SNOWFLAKE,
+  // armes
+  fireBlade: FIRE_BLADE,
+  lightHammerHead: LIGHT_HAMMER_HEAD,
+  windShuriken: WIND_SHURIKEN,
+  boltBlade: BOLT_BLADE,
+  waterTrident: WATER_TRIDENT,
+  // projectiles & entités
+  ember: EMBER,
+  windCrescent: WIND_CRESCENT,
+  waterDrop: WATER_DROP,
+  teslaNode: TESLA_NODE,
+  // icônes
+  iconFlame: ICON_FLAME,
+  iconShield: ICON_SHIELD,
+  iconTornado: ICON_TORNADO,
+  iconBolt: ICON_BOLT,
+  iconDroplet: ICON_DROPLET,
 });

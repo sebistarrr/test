@@ -51,9 +51,11 @@ export function createSelectScreen({ root, onStart }) {
     role.textContent = el.tagline.split('—')[0].trim().toUpperCase();
 
     card.append(cv, name, role);
+    card.setAttribute('aria-pressed', 'false');
     card.addEventListener('click', () => {
       picks[active] = id;
       active = active === 'a' ? 'b' : 'a';
+      showSheet(id);
       refresh();
     });
     card.addEventListener('pointerenter', () => showSheet(id));
@@ -88,11 +90,15 @@ export function createSelectScreen({ root, onStart }) {
         <dt>Corps à corps</dt><dd>${melee} toutes les ${w.melee.cooldown}s</dd>
         <dt>Pouvoir</dt><dd>${el.ability.name} — recharge ${el.ability.cooldown}s</dd>
         <dt>Ultime</dt><dd>${el.ultimate.name} — ${el.ultimate.duration}s</dd>
-        <dt>Projectile</dt><dd>${Object.values(el.projectiles).map((p) => `${p.label} — ${p.damage} PV, ${p.speed} px/s`).join(' · ')}</dd>
+        <dt>Projectile</dt><dd>${projectileLine(el)}</dd>
       </dl>`;
   }
 
   function refresh() {
+    for (const card of rosterEl.children) {
+      const id = card.dataset.id;
+      card.setAttribute('aria-pressed', String(id === picks.a || id === picks.b));
+    }
     for (const key of ['a', 'b']) {
       const id = picks[key];
       const el = id ? ELEMENTS[id] : null;
@@ -112,6 +118,13 @@ export function createSelectScreen({ root, onStart }) {
     hide() { root.classList.add('hidden'); },
     get picks() { return { ...picks }; },
   };
+}
+
+/** Ligne « Projectile » de la fiche — certains éléments n'en ont aucun. */
+function projectileLine(el) {
+  const list = Object.values(el.projectiles ?? {});
+  if (!list.length) return 'aucun — tout passe par l’arme et les zones';
+  return list.map((p) => `${p.label} — ${p.damage} PV, ${p.speed} px/s`).join(' · ');
 }
 
 /** Vignette : la boule de l'élément + la tête de son arme. */

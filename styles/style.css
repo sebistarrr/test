@@ -112,19 +112,22 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2.2%;
-  padding: 4% 5%;
+  gap: 2%;
+  padding: 4% 4%;
   background: var(--paper);
   text-align: center;
   /* les tailles sont en cqw pour suivre l'échelle du canvas */
   container-type: inline-size;
+  /* le roster complet peut dépasser sur les écrans courts */
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .screen.hidden { display: none; }
 
 .select-title {
   font-family: var(--font-heavy);
-  font-size: 6.2cqw;
+  font-size: 5.4cqw;
   letter-spacing: 0.02em;
   margin: 0;
   color: #17141d;
@@ -142,8 +145,8 @@ body {
   background: #fff;
   border: 0.9cqw solid #000;
   border-radius: 0;
-  padding: 2.5cqw 3cqw;
-  min-width: 30cqw;
+  padding: 2cqw 2.6cqw;
+  min-width: 28cqw;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -196,18 +199,18 @@ body {
 
 /* --- roster d'éléments --- */
 .roster {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3cqw;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  justify-items: stretch;
+  gap: 2cqw;
+  width: 92cqw;
 }
 
 .card {
   appearance: none;
   cursor: pointer;
-  width: 30cqw;
-  padding: 2.4cqw 1.6cqw 2.8cqw;
-  border: 0.9cqw solid #000;
+  padding: 1.4cqw 0.8cqw 1.8cqw;
+  border: 0.7cqw solid #000;
   background: #fff;
   box-shadow: 0.8cqw 0.8cqw 0 rgba(0,0,0,.85);
   display: flex;
@@ -217,25 +220,26 @@ body {
   transition: transform .12s ease;
 }
 .card:hover, .card:focus-visible { transform: translate(-0.35cqw, -0.35cqw); outline: none; }
-.card canvas { width: 16cqw; height: 16cqw; image-rendering: pixelated; }
+.card[aria-pressed="true"] { background: #fffbe6; }
+.card canvas { width: 12cqw; height: 12cqw; image-rendering: pixelated; }
 .card-name {
   font-family: var(--font-heavy);
-  font-size: 3.6cqw;
+  font-size: 2.7cqw;
   color: var(--accent);
   -webkit-text-stroke: 0.35cqw #000;
   paint-order: stroke fill;
 }
-.card-role { font-size: 2.4cqw; color: #6b6b6b; letter-spacing: .06em; }
+.card-role { font-size: 1.9cqw; color: #6b6b6b; letter-spacing: .04em; }
 
 /* --- fiche détaillée --- */
 .element-sheet {
-  width: 84cqw;
+  width: 92cqw;
   border: 0.7cqw solid #000;
   background: #fff;
-  padding: 2.4cqw 3cqw;
+  padding: 1.8cqw 2.4cqw;
   text-align: left;
-  font-size: 2.5cqw;
-  line-height: 1.55;
+  font-size: 2.2cqw;
+  line-height: 1.45;
   box-shadow: 0.7cqw 0.7cqw 0 rgba(0,0,0,.85);
 }
 .element-sheet h3 {
@@ -246,7 +250,7 @@ body {
   -webkit-text-stroke: 0.3cqw #000;
   paint-order: stroke fill;
 }
-.element-sheet dl { display: grid; grid-template-columns: auto 1fr; gap: .3cqw 2cqw; margin: 0; }
+.element-sheet dl { display: grid; grid-template-columns: auto 1fr; gap: .2cqw 1.6cqw; margin: 0; }
 .element-sheet dt { font-weight: 700; color: #444; letter-spacing: .04em; }
 .element-sheet dd { margin: 0; }
 

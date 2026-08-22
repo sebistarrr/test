@@ -29,7 +29,10 @@ export class Fighter {
     const inner = ARENA.inner;
     this.x = inner.left + (inner.right - inner.left) * spawn.x;
     this.y = inner.top + (inner.bottom - inner.top) * spawn.y;
-    this.heading = spawn.heading;
+    // léger écart de cap piloté par la seed : deux duels d'un même
+    // affrontement ne se déroulent pas exactement pareil, sans que la fiche
+    // de l'élément ne change d'un iota
+    this.heading = spawn.heading + rng.spread(0.35);
     this.speed = element.movement.speed;
     this.impulseX = 0;
     this.impulseY = 0;
@@ -51,12 +54,29 @@ export class Fighter {
     };
     this.ult = { charge: 0, active: 0, ready: false };
 
-    // stat évolutive (Glace : « Damage/Slow »)
-    this.stacks = 1;
+    // stats évolutives affichées dans le HUD, valeurs de départ dans la fiche
+    // `stacks`  : stat principale (Glace « Damage/Slow », Feu « Burn », …)
+    // `stacks2` : stat secondaire (Lumière « Knockback », Eau « Size », …)
+    this.stacks = element.progression?.stack ?? 1;
+    this.stacks2 = element.progression?.stack2 ?? 0;
 
     // ralentissements empilés
     /** @type {Array<{amount:number, until:number}>} */
     this.slows = [];
+
+    /**
+     * Dégâts sur la durée (brûlure du Feu, etc.). Le tic est appliqué par
+     * Match, seul point d'entrée des dégâts.
+     * @type {Array<{damage:number, interval:number, timer:number, until:number,
+     *               source:Fighter, ring:string|null}>}
+     */
+    this.dots = [];
+    /** Teinte du corps imposée par un effet (piège de Lumière). */
+    this.tint = null;
+    this.tintUntil = 0;
+    /** Bouclier absorbant (Lumière). */
+    this.shield = 0;
+    this.shieldMax = 0;
 
     this.trailTimer = 0;
     this.boost = 0; // durée restante d'un bonus de vitesse
@@ -87,6 +107,37 @@ export class Fighter {
     if (this.slows.length > 8) this.slows.shift();
   }
 
+  /**
+   * Applique (ou rafraîchit) un dégât sur la durée.
+   * Un seul DoT par source : une nouvelle application remplace la précédente,
+   * comme la brûlure du Feu qui se « rafraîchit » à chaque coup.
+   */
+  applyDot({ damage, interval, duration, source, ring = null }, now) {
+    const existing = this.dots.find((d) => d.source === source);
+    const dot = {
+      damage,
+      interval,
+      timer: existing ? existing.timer : interval,
+      until: now + duration,
+      source,
+      ring,
+    };
+    if (existing) Object.assign(existing, dot);
+    else this.dots.push(dot);
+  }
+
+  /** Teinte temporaire du corps (effet visuel d'un contrôle adverse). */
+  applyTint(color, duration, now) {
+    this.tint = color;
+    this.tintUntil = now + duration;
+  }
+
+  /** Couleur d'anneau d'état à dessiner autour du corps, s'il y en a une. */
+  statusRing(now) {
+    for (const d of this.dots) if (d.until > now && d.ring) return d.ring;
+    return null;
+  }
+
   /** Vitesse effective en px/s. */
   currentSpeed(now) {
     return this.el.movement.speed * this.slowFactor(now) * (this.boost > 0 ? this.boostFactor : 1);
@@ -106,6 +157,8 @@ export class Fighter {
     this.invulnerable = Math.max(0, this.invulnerable - dt);
     this.boost = Math.max(0, this.boost - dt);
     if (this.slows.length) this.slows = this.slows.filter((s) => s.until > now);
+    if (this.dots.length) this.dots = this.dots.filter((d) => d.until > now);
+    if (this.tint && now >= this.tintUntil) this.tint = null;
 
     // --- pilotage : on tourne doucement vers l'adversaire (mesuré ~1,9 rad/s)
     const mv = this.el.movement;
@@ -191,8 +244,9 @@ export class Fighter {
 
     this.drawWeapon(ctx);
 
-    // corps
-    const filled = this.flash > 0 ? look.bodyHit : look.body;
+    // corps — la teinte d'un contrôle adverse prime sur la couleur d'élément,
+    // le flash blanc d'encaissement prime sur tout
+    const filled = this.flash > 0 ? look.bodyHit : this.tint ?? look.body;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, TAU);
     ctx.fillStyle = filled;
@@ -200,6 +254,32 @@ export class Fighter {
     ctx.lineWidth = look.outlineWidth;
     ctx.strokeStyle = look.outline;
     ctx.stroke();
+
+    // anneau d'état (brûlure : cerclage orange autour de la victime)
+    const ring = this.statusRing(now);
+    if (ring) {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius + look.outlineWidth * 0.9, 0, TAU);
+      ctx.lineWidth = look.outlineWidth * 1.1;
+      ctx.strokeStyle = ring;
+      ctx.stroke();
+    }
+
+    // bulle de bouclier (Lumière)
+    if (this.shield > 0 && this.shieldMax > 0) {
+      const k = this.shield / this.shieldMax;
+      const rr = this.radius * (1.35 + 0.1 * k);
+      const g = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, rr);
+      g.addColorStop(0, 'rgba(255,255,255,0.05)');
+      g.addColorStop(1, `rgba(255,255,255,${0.35 * k + 0.15})`);
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, rr, 0, TAU);
+      ctx.fill();
+      ctx.lineWidth = 2.5;
+      ctx.strokeStyle = `rgba(120,120,120,${0.35 + 0.4 * k})`;
+      ctx.stroke();
+    }
 
     // points de vie
     ctx.font = look.hpFont;
