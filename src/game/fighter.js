@@ -294,20 +294,23 @@ export class Fighter {
       ctx.stroke();
     }
 
-    // bulle de bouclier (Lumière)
-    if (this.shield > 0 && this.shieldMax > 0) {
+    // Égide : sur la vidéo, aucune bulle grise — le bouclier se lit sur un
+    // **liseré doré** collé au corps, d'autant plus épais qu'il est plein.
+    if (this.shield > 0 && this.shieldMax > 0 && look.shield) {
       const k = this.shield / this.shieldMax;
-      const rr = this.radius * (1.35 + 0.1 * k);
-      const g = ctx.createRadialGradient(this.x, this.y, this.radius, this.x, this.y, rr);
-      g.addColorStop(0, 'rgba(255,255,255,0.05)');
-      g.addColorStop(1, `rgba(255,255,255,${0.35 * k + 0.15})`);
-      ctx.fillStyle = g;
+      const rr = this.radius + look.outlineWidth * 1.15;
       ctx.beginPath();
       ctx.arc(this.x, this.y, rr, 0, TAU);
-      ctx.fill();
-      ctx.lineWidth = 2.5;
-      ctx.strokeStyle = `rgba(120,120,120,${0.35 + 0.4 * k})`;
+      ctx.lineWidth = 1.5 + 3 * k;
+      ctx.strokeStyle = look.shield.color;
       ctx.stroke();
+      const g = ctx.createRadialGradient(this.x, this.y, rr, this.x, this.y, rr * 1.35);
+      g.addColorStop(0, look.shield.glow);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, rr * 1.35, 0, TAU);
+      ctx.fill();
     }
 
     // points de vie

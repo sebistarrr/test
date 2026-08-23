@@ -129,7 +129,8 @@ export const lightAbilities = {
     if (!target || !target.alive) return;
 
     target.applySlow(s.slow, 0.2, now);
-    target.applyTint(s.tint, 0.2, now, s.tintAlpha ?? 1);
+    // pas de teinte sur la cible : sur la vidéo, c'est la Lumière qui s'allume
+    if (s.tint) target.applyTint(s.tint, 0.2, now, s.tintAlpha ?? 1);
 
     // le trait tire la cible vers la Lumière
     const dx = f.x - target.x;

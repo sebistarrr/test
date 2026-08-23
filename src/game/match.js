@@ -153,9 +153,9 @@ export class Match {
       if (d.timer > 0) continue;
       d.timer = d.interval;
       this.damage(f, d.damage, d.source, { kind: 'dot', silent: true });
-      if (d.ring) {
-        this.fx.burst(f.x, f.y, 3, { color: d.ring, speed: 70, size: 4, life: 0.35 });
-      }
+      // Pas d'étincelles au tic : sur la vidéo, un dégât sur la durée ne se
+      // signale que par l'anneau et la teinte du corps. (En tirer une gerbe
+      // consommerait en plus le RNG de simulation et casserait `?seed=`.)
     }
   }
 

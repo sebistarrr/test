@@ -15,7 +15,7 @@ fiche gelée correspondante.
   | `LIGHT vs LIGHTNING` | Lumière, Foudre | 576 × 1024, 61,2 s |
   | `ICE vs LIGHT` | Lumière | 576 × 1024, 121,4 s |
   | `LIGHT vs PLANT` | Lumière, Plante | 576 × 1024, 114,6 s |
-  | `FIRE vs WATER` | Feu, Eau | 576 × 1024, 64,4 s |
+  | `FIRE vs WATER` | Feu, Eau | 576 × 1024, 64,3 s |
   | `WIND vs PLANT` | Vent, Plante | 576 × 1024, 80,6 s |
   | `WIND vs LIGHT` | Vent | 576 × 1024, 68,7 s |
   | `WIND vs LIGHTNING` | Vent | 576 × 1024, 46,9 s |
@@ -206,10 +206,11 @@ début et létale à la fin.
 | Corps | rayon 41 px, `#fb0a0a`, contour noir 5 px | mesuré |
 | Halo | orange, visible quand la Rage est chargée | mesuré |
 | Déplacement | 480 px/s, virage 1,95 rad/s, pilotage 0,42 | calé |
-| Arme | *Lame ardente* — portée 150 px, manche sombre 78 px + sprite `fireBlade` ×4 (72 × 40 px) | mesuré |
+| Arme | *Lame ardente* — portée 150 px, **aucun manche visible** : la garde anthracite à **gemme rouge** est posée au ras de la boule et fait partie du sprite `fireBlade` 28 × 9 ×4 (**112 × 36 px**) | mesuré |
+| Détail de la lame | longue flamme effilée au **contour noir ondulé** : bord orange `rgb(242,146,8)`, corps jaune `rgb(251,182,3)`, cœur incandescent | mesuré |
 | Corps à corps | 5 PV / 1,15 s, recul 240 | calé |
 | **Effet à la touche** | **brûlure** : la pile monte de 0,5 (1 → 5,5 mesuré) ; le DoT inflige `pile/2,4` PV par seconde pendant `pile` secondes | mesuré |
-| **Marquage visuel** | la brûlure **colore entièrement la victime en orange** — au zoom, la boule jaune de la Foudre vire franchement à l'orange ; ce n'est pas un cerclage | mesuré |
+| **Marquage visuel** | la brûlure fait **les deux à la fois** : elle **colore** la victime (la boule bleue de l'Eau vire au violet, la jaune de la Foudre à l'orange) **et** la **cercle d'un gros anneau orange**. Vérifié au zoom sur FIRE vs WATER | mesuré |
 | Pouvoir | *Gerbe de braises* — 3 braises, dispersion ±0,55 rad, toutes les 3,6 s | calé |
 | Cycle de l'ultime | jauge pleine toutes les **25 à 27 s** (mesuré sur la jauge) | mesuré |
 | Ultime | *Rage infernale* (`INFERNAL RAGE`), 6 s : nova de **90 cubes orange**, ailes de flammes battantes, aura brûlante de 150 px (2 PV / 0,6 s + brûlure), vitesse ×1,2 | mesuré |
@@ -230,7 +231,9 @@ littéralement ce qu'annonce son libellé dans la vidéo.
 | --- | --- | --- |
 | Corps | rayon 41 px, `#fbf7a3`, contour noir 5 px | mesuré |
 | Déplacement | 415 px/s (le plus lent), virage 1,6 rad/s | calé |
-| Arme | *Marteau d'aube* — portée 155 px, manche gris 91 px + sprite `lightHammerHead` ×4,6 (64 × 78 px) | mesuré |
+| Arme | *Marteau d'aube* — portée 155 px, hampe d'acier courte (31 px visibles) + sprite `lightHammerHead` 11 × 10 ×5,7 (**63 × 57 px**), tête **plus large que haute** au gros contour noir | mesuré |
+| Halo | **doré**, allumé dès que le Piège radiant est chargé et pendant tout le trait — c'est **la Lumière** qui s'illumine, jamais sa cible | mesuré |
+| Égide (aspect) | aucune bulle grise sur la vidéo : le bouclier se lit sur un **liseré doré** collé au corps, d'autant plus épais qu'il est plein | mesuré |
 | **Dégâts du marteau** | **= stat « Shield Damage »**, donc **1 PV au premier coup** | mesuré |
 | Cadence | 1 coup / 1,5 s — la plus lente du roster | calé |
 | **Recul** | **= stat « Knockback »** : 1500 au départ, traduit en impulsion `210 + stat × 0,05` | mesuré |
@@ -317,13 +320,14 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 | Bloc | Valeur | Source |
 | --- | --- | --- |
 | Corps | rayon 41 px, `#f2f003`, contour noir 5 px | mesuré |
-| Halo | **cyan** (couleur des arcs, pas du corps) | mesuré |
+| Halo | **cyan et permanent** : sur LIGHT vs LIGHTNING, la boule jaune porte son halo bleu du début à la fin du duel, décharge ou pas — c'est sa signature à l'écran | mesuré |
 | Déplacement | 500 px/s, virage 2 rad/s | calé |
-| Arme | *Lame fulgurante* — portée 145 px, manche 73 px + sprite `boltBlade` ×4,5 (72 × 54 px) | mesuré |
+| Arme | *Lame fulgurante* — portée 145 px, **long manche de bois brun** (88 px) surmonté d'un **fer de lance jaune** trapu au gros contour noir : sprite `boltBlade` 14 × 9 ×4 (**56 × 36 px**), pas un zigzag plat | mesuré |
 | Corps à corps | 3 PV / 1 s ; **plante une borne à l'impact** ; pile +0,5 | mesuré |
-| **Bornes** | sprite `teslaNode`, 8 au maximum (la plus ancienne disparaît), durée 16 s, une posée toutes les 3 s | mesuré |
+| **Bornes** | sprite `teslaNode` ×2,6 (**34 × 34 px**), 8 au maximum (la plus ancienne disparaît), durée 16 s, une posée toutes les 3 s | mesuré |
+| Aspect des bornes | ce n'est pas un cristal mais une **petite bobine** : boule au sommet, deux disques à collerette empilés, deux pieds, blanc lavande à contour bleu nuit | mesuré |
 | **Chaîne** | toutes les 1,6 s : arc Foudre → jusqu'à 4 bornes → adversaire s'il est à ≤ 270 px du dernier maillon ; inflige la pile et ralentit de 18 % | mesuré |
-| Ultime | *Surcharge* (`SUPERCHARGE`), 5 s : chaîne toutes les 0,5 s, portée ×1,5, vitesse ×1,15 | mesuré |
+| Ultime | *Surcharge* (`SUPERCHARGE`), 5 s : chaîne toutes les 0,5 s, portée ×1,5, vitesse ×1,15. Sur la vidéo, la jauge se vide à 13 s, 32 s et 55 s, et chaque vidage déclenche **la grande toile cyan** qui relie toutes les bornes | mesuré |
 | Projectile | aucun — les bornes et les arcs tiennent ce rôle | mesuré |
 | HUD | `Chain Damage: N` (1 → 4,5 mesuré) | mesuré |
 
@@ -337,13 +341,14 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 | --- | --- | --- |
 | Corps | rayon 41 px, `#4a86f7`, contour noir 5 px | mesuré |
 | Déplacement | 455 px/s, virage 1,8 rad/s | calé |
-| Arme | *Trident des marées* — portée 150 px, manche bleu 102 px + sprite `waterTrident` ×4 (48 × 60 px) | mesuré |
+| Arme | *Trident des marées* — portée 150 px, hampe acier-bleu 102 px + sprite `waterTrident` ×4 (48 × 60 px), **contour noir** et non bleu nuit | mesuré |
 | Corps à corps | 3 PV / 1,1 s ; pile +1 **et** taille +5 | mesuré |
 | **Tourbillon** | posé toutes les 6 s à l'endroit courant, 2 simultanés au plus, 7,5 s ; **rayon = stat « Size » × 0,9** ; aspiration 60 ; `pile × 0,6` PV toutes les 1,2 s | mesuré |
+| **Aspect du tourbillon** | pas un dégradé tournoyant : une **vraie spirale en pixels, opaque** — disque bleu `rgb(102,151,217)`, bras bleu nuit enroulé sur ~2,5 tours, éclats clairs sur un bord, gros contour. Sprite `waterWhirlpool` 21 × 21 étiré au diamètre courant et tourné lentement (1,1 rad/s) | mesuré |
 | Gouttes | chaque tourbillon crache 1 goutte toutes les 1,8 s | calé |
-| Ultime | *Maelström* (`MAELSTROM`), 5,5 s : vortex de 200 px au centre de l'arène, aspiration 170, `pile` PV toutes les 0,8 s | calé |
+| Ultime | *Maelström* (`MAELSTROM`), 5,5 s : **la même spirale**, deux fois plus grande (200 px), au centre de l'arène, aspiration 170, `pile` PV toutes les 0,8 s | calé |
 | Projectile | *Goutte* — `waterDrop` ×3, 330 px/s, 1 PV, 1 rebond | calé |
-| HUD | `Whirlpool Damage: N` **et** `Size: M` (deux lignes, 70 → 100 mesuré) | mesuré |
+| HUD | `Whirlpool Damage: N` **et** `Size: M` (deux lignes). Le duel FIRE vs WATER pousse plus loin que le relevé initial — 1 → 17 et 70 → 150 — et la **valeur affichée est littéralement le diamètre du tourbillon en pixels**. La progression du jeu reste calée sur 1 → 7 / 70 → 100 : ce point d'équilibrage n'a pas été retouché ici. | mesuré |
 
 ---
 
@@ -417,7 +422,8 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Absorption totale         | un coup entièrement absorbé fait clignoter sans coûter de PV |
 | Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège, brûlure) |
 | Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
-| Arme sans manche          | `handle.width: 0` → seul le sprite est tracé (shuriken)    |
+| Arme sans manche          | `handle.width: 0` → seul le sprite est tracé (shuriken, lame ardente) |
+| Bouclier                  | `look.shield` : liseré et halo aux couleurs de l'élément    |
 | Rendu hors cadre          | passe `drawUnbounded` pour les effets qui débordent (dôme) |
 
 ## Comment les mesures ont été prises

@@ -14,7 +14,8 @@
 
 import { TAU, clamp } from '../../core/math.js';
 import { ARENA } from '../../data/tuning.js';
-import { tickZones, drawSpiral } from './zone.js';
+import { tickZones } from './zone.js';
+import { drawSpriteCentered } from '../../render/sprites.js';
 
 export const waterAbilities = {
   id: 'water',
@@ -143,47 +144,32 @@ export const waterAbilities = {
     }
   },
 
-  /** Tourbillons et maelström, sous les combattants. */
+  /**
+   * Tourbillons et maelström, sous les combattants.
+   *
+   * La vidéo ne montre pas un dégradé tournoyant mais une **vraie spirale en
+   * pixels, opaque** : disque bleu, bras bleu nuit enroulé sur deux tours et
+   * demi, éclats clairs sur un bord, gros contour. On blitte donc le sprite
+   * `waterWhirlpool` étiré au diamètre courant et tourné lentement — le rendu
+   * plus-proche-voisin conserve les blocs comme à l'écran.
+   */
   drawUnder(ctx, f) {
-    const w = f.el.ability.whirlpool;
     for (const z of f.state.pools) {
-      const fade = Math.min(1, z.life / 0.6);
-      ctx.save();
-      ctx.globalAlpha = fade;
-      ctx.beginPath();
-      ctx.arc(z.x, z.y, z.r, 0, TAU);
-      ctx.fillStyle = w.fill;
-      ctx.fill();
-      ctx.lineWidth = 3;
-      ctx.strokeStyle = w.edge;
-      ctx.stroke();
-      drawSpiral(ctx, z.x, z.y, z.r * 0.92, z.angle, {
-        arms: w.arms,
-        color: 'rgba(219,234,254,0.85)',
-        width: Math.max(3, z.r * 0.045),
-      });
-      ctx.restore();
+      this.drawVortex(ctx, z, Math.min(1, z.life / 0.6));
     }
-
     const z = f.state.maelstrom;
     if (!z || f.ult.active <= 0) return;
-    const m = f.el.ultimate.maelstrom;
-    const fade = Math.min(1, f.ult.active / 0.6);
+    this.drawVortex(ctx, z, Math.min(1, f.ult.active / 0.6));
+  },
+
+  /** @param {CanvasRenderingContext2D} ctx */
+  drawVortex(ctx, z, fade) {
+    const d = z.r * 2;
     ctx.save();
     ctx.globalAlpha = fade;
-    ctx.beginPath();
-    ctx.arc(z.x, z.y, z.r, 0, TAU);
-    ctx.fillStyle = m.fill;
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = m.edge;
-    ctx.stroke();
-    drawSpiral(ctx, z.x, z.y, z.r * 0.95, z.angle, {
-      arms: m.arms,
-      color: 'rgba(219,234,254,0.9)',
-      width: 8,
-      turns: 1.35,
-    });
+    ctx.translate(z.x, z.y);
+    ctx.rotate(z.angle);
+    drawSpriteCentered(ctx, 'waterWhirlpool', 0, 0, d);
     ctx.restore();
   },
 

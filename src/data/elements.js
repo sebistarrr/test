@@ -362,14 +362,21 @@ const FIRE = {
     reach: 150, // mesuré : ~166 px, ramené à l'échelle du roster
     spin: SPIN,
     spinDir: -1,
+    /**
+     * **Aucun manche visible.** Sur FIRE vs WATER, la garde anthracite à gemme
+     * rouge est posée au ras de la boule et la flamme part directement — la
+     * garde fait partie du sprite. `width: 0` demande au moteur de ne rien
+     * tracer, `length` place le sprite juste au bord du corps.
+     */
     handle: {
-      length: 78,
-      width: 12,
+      length: 38,
+      width: 0,
       color: '#3f2a20',
       dark: '#211410',
       outline: '#0a0502',
-      gem: { at: 0.85, size: 9, color: '#dc2626' },
+      gem: null,
     },
+    /** mesuré : garde + flamme = 112 × 36 px, la pointe tombe sur la portée. */
     head: { sprite: 'fireBlade', scale: 4, anchorY: 0.5 },
     hitbox: { from: 0.5, to: 1, radius: 16 },
     melee: {
@@ -386,10 +393,12 @@ const FIRE = {
           interval: 1,
           duration: (self) => self.stacks, // la stat sert aussi de durée
           /**
-           * La brûlure **colore la victime en orange** : au zoom, la boule
-           * jaune de la Foudre vire franchement à l'orange pendant toute la
-           * durée. Ce n'est pas un cerclage.
+           * La brûlure fait **les deux à la fois** : elle colore la victime
+           * *et* la cercle d'orange. Au zoom sur FIRE vs WATER, la boule bleue
+           * de l'Eau vire au violet (bleu + orange à 0,72) **et** porte un gros
+           * anneau orange vif tout autour, pendant toute la durée.
            */
+          ring: '#f97316',
           tint: { color: '#f97316', alpha: 0.72 },
         },
       },
@@ -438,7 +447,9 @@ const FIRE = {
       life: 1.3,
       bounces: 0,
       knockback: 90,
-      onHit: { dot: { damage: 1, interval: 1, duration: 2, tint: { color: '#f97316', alpha: 0.72 } } },
+      onHit: {
+        dot: { damage: 1, interval: 1, duration: 2, ring: '#f97316', tint: { color: '#f97316', alpha: 0.72 } },
+      },
       trail: { color: 'rgba(249,115,22,0.45)', every: 0.03, life: 0.3 },
     },
   },
@@ -473,12 +484,23 @@ const LIGHT = {
     hpColor: '#0a0a0a',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
+    /**
+     * Halo doré. Relevé sur LIGHT vs LIGHTNING : dès que le Piège radiant est
+     * chargé, **c'est la Lumière elle-même** qui s'entoure d'un grand halo d'or
+     * — et il reste allumé pendant tout le trait. La cible, elle, n'est pas
+     * teintée.
+     */
     aura: {
-      color: 'rgba(250,220,60,0.5)',
-      radius: 1.75,
-      pulse: 1.8,
+      color: 'rgba(253,224,71,0.62)',
+      radius: 2.3,
+      pulse: 1.2,
       showWhen: 'ultimate-ready',
     },
+    /**
+     * L'Égide ne se voit pas comme une bulle grise sur la vidéo : elle se lit
+     * sur le **liseré doré** de la boule, qui s'épaissit avec le pool.
+     */
+    shield: { color: 'rgba(253,224,71,0.6)', glow: 'rgba(250,204,21,0.12)' },
     trail: { color: 'rgba(250,220,60,0.25)', every: 0.05, life: 0.26 },
     accent: '#eab308',
   },
@@ -491,15 +513,17 @@ const LIGHT = {
     reach: 155, // mesuré : ~159 px
     spin: SPIN,
     spinDir: 1,
+    /** Hampe d'acier courte : ~31 px visibles au-delà de la boule (mesuré). */
     handle: {
-      length: 91,
+      length: 78,
       width: 11,
       color: '#8b8b8b',
       dark: '#4f4f4f',
-      outline: '#141414',
-      gem: { at: 0.6, size: 9, color: '#f5d020' },
+      outline: '#0a0a0a',
+      gem: { at: 0.62, size: 9, color: '#f5d020' },
     },
-    head: { sprite: 'lightHammerHead', scale: 4.6, anchorY: 0.5 },
+    /** mesuré : tête de 63 × 57 px, plus large que haute, gros contour noir. */
+    head: { sprite: 'lightHammerHead', scale: 5.7, anchorY: 0.5 },
     hitbox: { from: 0.58, to: 1, radius: 22 },
     melee: {
       /**
@@ -578,9 +602,14 @@ const LIGHT = {
       glow: 'rgba(250,220,60,0.55)',
       width: 7,
       gap: 5, // double trait doré (observé)
-      /** La cible prend la teinte de la Lumière tant qu'elle est piégée. */
-      tint: '#f8f0b0',
-      tintAlpha: 0.92,
+      /**
+       * **La cible n'est pas teintée.** Au zoom sur LIGHT vs LIGHTNING, la
+       * Foudre piégée garde son jaune saturé et son halo bleu : c'est la
+       * Lumière qui s'allume (voir `look.aura`). Le trait doré est le seul
+       * effet posé sur l'adversaire.
+       */
+      tint: null,
+      tintAlpha: 0,
       slow: 0.55,
       /** Drain mesuré : 1 PV par seconde, pas davantage. */
       tickInterval: 1,
@@ -780,11 +809,16 @@ const LIGHTNING = {
     hpColor: '#0a0a0a',
     hpFont: '900 34px "Archivo Black", "Arial Black", sans-serif',
     hpOffsetY: 12,
+    /**
+     * Halo bleu **permanent**. Relevé sur LIGHT vs LIGHTNING : la boule jaune
+     * de la Foudre porte son halo cyan du début à la fin du duel, y compris
+     * quand aucune décharge n'est en cours — c'est sa signature à l'écran.
+     */
     aura: {
-      color: 'rgba(56,189,248,0.5)', // halo cyan des arcs (observé)
-      radius: 1.65,
-      pulse: 4,
-      showWhen: 'ultimate-ready',
+      color: 'rgba(56,189,248,0.55)',
+      radius: 2.4,
+      pulse: 0.7, // respiration lente : sur la vidéo le halo ne clignote pas
+      showWhen: 'always',
     },
     trail: { color: 'rgba(125,211,252,0.28)', every: 0.045, life: 0.24 },
     accent: '#38bdf8',
@@ -797,8 +831,10 @@ const LIGHTNING = {
     reach: 145,
     spin: SPIN,
     spinDir: -1,
-    handle: { length: 73, width: 10, color: '#8a6d3a', dark: '#513f21', outline: '#1b1408', gem: null },
-    head: { sprite: 'boltBlade', scale: 4.5, anchorY: 0.5 },
+    /** Long manche de **bois brun** au contour noir en pointillé (mesuré). */
+    handle: { length: 88, width: 10, color: '#7a5c30', dark: '#48371c', outline: '#0f0a04', gem: null },
+    /** mesuré : fer de lance de 56 × 36 px au bout du manche. */
+    head: { sprite: 'boltBlade', scale: 4, anchorY: 0.5 },
     hitbox: { from: 0.52, to: 1, radius: 17 },
     melee: {
       damage: 3,
@@ -825,16 +861,22 @@ const LIGHTNING = {
       max: 8, // au-delà, la plus ancienne disparaît
       life: 16,
       sprite: 'teslaNode',
-      scale: 3,
+      /** mesuré : petite bobine de 34 × 34 px (13 cellules × 2,6). */
+      scale: 2.6,
     },
     chain: {
       interval: 1.6, // cadence des décharges hors ultime
       range: 270, // portée borne → cible
       color: 'rgba(103,232,249,0.95)',
       glow: 'rgba(56,189,248,0.45)',
-      width: 4,
+      width: 5,
       jitter: 14,
-      life: 0.28,
+      /**
+       * Rémanence de l'arc à l'écran. Relevé sur LIGHT vs LIGHTNING : la toile
+       * cyan reste lisible ~0,45 s après chaque décharge — c'est ce qui rend le
+       * réseau de bornes visible en permanence pendant la Surcharge.
+       */
+      life: 0.45,
       slow: 0.18,
       slowDuration: 0.8,
     },
@@ -937,10 +979,13 @@ const WATER = {
       pull: 60,
       tickInterval: 1.2,
       tickDamage: (self) => Math.max(1, Math.round(self.stacks * 0.6)),
-      fill: 'rgba(96,165,250,0.30)',
-      edge: 'rgba(37,99,235,0.55)',
-      arms: 3,
-      spin: 2.2,
+      /**
+       * Aspect relevé sur FIRE vs WATER : une **spirale en pixels opaque**
+       * (sprite `waterWhirlpool`), pas un dégradé — disque bleu, bras bleu nuit
+       * sur deux tours et demi, gros contour. Elle tourne lentement sur place.
+       */
+      edge: 'rgba(20,48,79,0.75)', // onde d'apparition, au ton du contour
+      spin: 1.1, // rotation lente, mesurée sur la spirale de la vidéo
     },
     /** Chaque tourbillon crache des gouttes. */
     spray: { interval: 1.8, count: 1, projectile: 'droplet' },
@@ -962,10 +1007,8 @@ const WATER = {
       pull: 170,
       tickInterval: 0.8,
       tickDamage: (self) => Math.max(2, Math.round(self.stacks)),
-      spin: 3.4,
-      arms: 3,
-      fill: 'rgba(59,130,246,0.34)',
-      edge: 'rgba(29,78,216,0.7)',
+      spin: 1.7, // même spirale, deux fois plus grande et un peu plus vive
+      edge: 'rgba(20,48,79,0.85)',
     },
   },
 

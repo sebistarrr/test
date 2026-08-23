@@ -157,57 +157,62 @@ export const SNOWFLAKE = deepFreeze({
  *   LIGHT vs LIGHTNING et FIRE vs WATER)
  * ================================================================== */
 
-/** FEU — lame de flamme : cœur blanc, corps orange, liseré rouge sombre. */
+/**
+ * FEU — **lame-flamme à garde noire**. Relevé sur FIRE vs WATER : au ras de la
+ * boule, une petite garde en losange anthracite avec une **gemme rouge**, puis
+ * une longue flamme effilée — bords orange, cœur jaune vif — au **contour noir
+ * épais et ondulé**. Le tout mesure ~110 px de long pour 46 de haut.
+ * Ce sprite contient donc la garde : le manche de la fiche reste invisible.
+ */
 export const FIRE_BLADE = deepFreeze({
-  w: 18,
-  h: 10,
+  w: 28,
+  h: 9,
   palette: {
-    K: '#2a0d02',
-    o: '#f2670c', // orange
-    y: '#fbbf24', // jaune
-    w: '#fff4c4', // cœur incandescent
+    K: '#1a0d02', // contour noir
+    g: '#3c3c42', // garde anthracite
+    r: '#c81f1f', // gemme rouge
+    o: '#f2760a', // bord orange (pipette : rgb(242,146,8))
+    y: '#fbb603', // corps jaune (pipette : rgb(251,182,3))
+    w: '#ffe15c', // cœur incandescent
   },
   rows: [
-    '.....KKKKKK.......',
-    '...KKoooooKKKK....',
-    '..KooyyyyyoooKKK..',
-    '.KoyywwwwwyyyooKK.',
-    'KoyywwwwwwwwyyyooK',
-    'KoyywwwwwwwwyyyooK',
-    '.KoyywwwwwyyyooKK.',
-    '..KooyyyyyoooKKK..',
-    '...KKoooooKKKK....',
-    '.....KKKKKK.......',
+    '.......KKKK.................',
+    '..KK...KooKKKK..............',
+    '.KggK.KoyyyooKKKKK..........',
+    'KggggKKoyywwyyyyyoKKKKK.....',
+    'KgrrgKKoywwwwwwwyyyyyyyoKKK.',
+    'KggggKKoyywwyyyyyoKKKKK.....',
+    '.KggK.KoyyyooKKKKK..........',
+    '..KK...KooKKKK..............',
+    '.......KKKK.................',
   ],
 });
 
-/** LUMIÈRE — tête de marteau : bloc doré à panneau clair. */
+/**
+ * LUMIÈRE — tête de marteau. Relevé sur LIGHT vs LIGHTNING : un bloc **plus
+ * large que haut**, cerclé d'un **gros contour noir**, bordure dorée et
+ * panneau intérieur très clair. ~37 × 34 px.
+ */
 export const LIGHT_HAMMER_HEAD = deepFreeze({
-  w: 14,
-  h: 17,
+  w: 11,
+  h: 10,
   palette: {
-    K: '#2a2007',
-    g: '#e0bd1e', // or
-    l: '#fdf6b8', // panneau clair
+    K: '#0a0a0a', // contour noir franc, comme les boules
+    g: '#e0b729', // bordure dorée (pipette : rgb(224,183,41))
+    l: '#fcec97', // panneau clair
+    w: '#fff3bf', // reflet
   },
   rows: [
-    '..KKKKKKKKKK..',
-    '.KggggggggggK.',
-    'KggggggggggggK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KgllllllllllgK',
-    'KggggggggggggK',
-    '.KggggggggggK.',
-    '..KKKKKKKKKK..',
+    '..KKKKKKK..',
+    '.KgggggggK.',
+    'KglllllllgK',
+    'KglwwwwwlgK',
+    'KglwwwwwlgK',
+    'KglwwwwwlgK',
+    'KglwwwwwlgK',
+    'KglllllllgK',
+    '.KgggggggK.',
+    '..KKKKKKK..',
   ],
 });
 
@@ -252,39 +257,43 @@ export const WIND_SHURIKEN = deepFreeze({
   ],
 });
 
-/** FOUDRE — lame en éclair. */
+/**
+ * FOUDRE — fer de lance en éclair. Relevé sur LIGHT vs LIGHTNING : un **fer de
+ * flèche jaune trapu** au gros contour noir, monté au bout d'un long manche de
+ * bois brun — pas un zigzag plat. ~50 × 34 px.
+ */
 export const BOLT_BLADE = deepFreeze({
-  w: 16,
-  h: 12,
+  w: 14,
+  h: 9,
   palette: {
-    K: '#3a2c05',
-    y: '#f5e60a',
-    w: '#fffbb0',
+    K: '#181004', // contour noir
+    y: '#f5d21a', // corps jaune
+    w: '#fdf6b0', // reflet
   },
   rows: [
-    '..........KKKK..',
-    '.........KyyyK..',
-    '........KyyyKK..',
-    '.....KKKyyyK....',
-    '...KKyyyyyyK....',
-    '.KKKyywwwyyyKKKK',
-    'KyywwwwwyyyyyyyK',
-    '.KKKyywwwyyyKKKK',
-    '...KKyyyyyyK....',
-    '.....KKKyyyK....',
-    '........KyyyKK..',
-    '.........KKKK...',
+    '........KK....',
+    '.....KKKKyKK..',
+    '..KKKKyyyyyyK.',
+    '.KKyyyyyyyyyyK',
+    'KKyyywwwyyyyyK',
+    '.KKyyyyyyyyyyK',
+    '..KKKKyyyyyyK.',
+    '.....KKKKyKK..',
+    '........KK....',
   ],
 });
 
-/** EAU — tête de trident à trois dents. */
+/**
+ * EAU — tête de trident à trois dents. Relevé sur FIRE vs WATER : bleu clair
+ * à **contour noir** (et non bleu nuit), monté sur une hampe acier-bleu.
+ */
 export const WATER_TRIDENT = deepFreeze({
   w: 12,
   h: 15,
   palette: {
-    K: '#0b2545',
-    b: '#7fb2f0', // bleu clair
-    w: '#dbeafe', // reflet
+    K: '#0a0f18', // contour noir, comme sur la vidéo
+    b: '#6fa9ee', // bleu clair
+    w: '#d6e9ff', // reflet
   },
   rows: [
     '.....KKKKKK.',
@@ -358,23 +367,75 @@ export const WATER_DROP = deepFreeze({
   rows: ['..KK..', '.KbbK.', '.KbbK.', 'KbwbbK', 'KbwbbK', 'KbbbbK', '.KbbK.', '..KK..'],
 });
 
-/** FOUDRE — borne statique posée dans l'arène (relais des chaînes). */
+/**
+ * FOUDRE — borne statique posée dans l'arène (relais des chaînes).
+ *
+ * Relevé sur LIGHT vs LIGHTNING : ce n'est pas un cristal, c'est une **petite
+ * bobine** — une boule au sommet, deux disques à collerette empilés, deux
+ * pieds. Blanc lavande à contour sombre, ~34 × 34 px, et la Foudre en sème une
+ * douzaine au fil du duel.
+ */
 export const TESLA_NODE = deepFreeze({
-  w: 9,
-  h: 11,
-  palette: { K: '#1e3a4c', b: '#7dd3fc', w: '#ffffff' },
+  w: 13,
+  h: 13,
+  palette: {
+    K: '#2f3242', // contour bleu-nuit (pipette : rgb(110,113,130))
+    b: '#9c9db2', // ombre des disques
+    w: '#e2e5f6', // blanc lavande
+  },
   rows: [
-    '....K....',
-    '...KwK...',
-    '..KwbwK..',
-    '.KbwbwbK.',
-    'KbwbbbwbK',
-    '.KbbbbbK.',
-    '..KbbbK..',
-    '.KbbbbbK.',
-    '..KbbbK..',
-    '.KKKKKKK.',
-    '..KKKKK..',
+    '.....KKK.....',
+    '....KwwwK....',
+    '....KwwwK....',
+    '.....KKK.....',
+    '..KKKKKKKKK..',
+    '.KwwwwwwwwwK.',
+    '.KwwwbbbwwwK.',
+    '..KKKKKKKKK..',
+    '..KwwwwwwwK..',
+    '..KwwbbbwwK..',
+    '..KKKKKKKKK..',
+    '...K.....K...',
+    '..KK.....KK..',
+  ],
+});
+
+/**
+ * EAU — **tourbillon** : la vidéo ne montre pas un dégradé tournoyant mais une
+ * vraie **spirale en pixels** — disque bleu opaque, bras bleu nuit enroulé sur
+ * environ deux tours et demi, éclats clairs sur le bord gauche, gros contour.
+ * Le sprite est étiré au diamètre courant (« Size » du HUD, 70 → 150 px).
+ */
+export const WATER_WHIRLPOOL = deepFreeze({
+  w: 21,
+  h: 21,
+  palette: {
+    K: '#14304f', // bras et contour, bleu nuit (pipette : rgb(54,105,148))
+    b: '#5b93da', // disque (pipette : rgb(102,151,217))
+    w: '#a9d2ff', // éclats clairs (pipette : rgb(115,181,255))
+  },
+  rows: [
+    '.........KKK.........',
+    '......KKbbbbbKK......',
+    '....KKbbbbbbbbbKK....',
+    '...KKbwbbbbbbbbbbK...',
+    '..KKbwbbKKKKKKKbbbK..',
+    '..KbbbKKbbbbbbKKbbK..',
+    '.KKwbKKbbbbbbbbKKbbK.',
+    '.KwbbKbbbbKKKbbbKKbK.',
+    '.KwbbKbbKKbbKKbbbKbb.',
+    'KKbbKKbbKbbbbKbbbKbbK',
+    'KKbbKKbbKbKbbbKbbKbbK',
+    'KKwbbKbbbKKbbbKbbKbbK',
+    '.KwbbKbbbbbbbKKbbKbb.',
+    '.KKwbbKbbbbbKKbbbKbK.',
+    '.KKbbbbKKKKKKbbbKKbK.',
+    '..KKwbbbbKKbbbbbKbK..',
+    '..KKKbbbbbbbbbbKbbK..',
+    '...KbKKbbbbbbKKbbK...',
+    '....KKKKKKKKKKbKK....',
+    '......KKbbbbbKK......',
+    '.........KKK.........',
   ],
 });
 
@@ -476,27 +537,31 @@ export const ICON_BOLT = deepFreeze({
   ],
 });
 
+/**
+ * EAU — icône du titre. Sur la vidéo, ce n'est pas une goutte mais la
+ * **spirale du tourbillon**, en bleu, à côté du mot « WATER ».
+ */
 export const ICON_DROPLET = deepFreeze({
   w: 16,
   h: 16,
-  palette: { K: '#0b2545', b: '#5a9bef', w: '#dbeafe' },
+  palette: { K: '#14304f', b: '#5b93da' },
   rows: [
-    '.......KK.......',
-    '......KbbK......',
-    '......KbbK......',
-    '.....KbbbbK.....',
-    '.....KbbbbK.....',
-    '....KbbwbbbK....',
-    '....KbwwbbbK....',
-    '...KbbwwbbbbK...',
-    '...KbbwwbbbbK...',
-    '..KbbbwwbbbbbK..',
-    '..KbbbwwbbbbbK..',
-    '..KbbbwwbbbbbK..',
-    '...KbbbwbbbbK...',
-    '....KbbbbbbK....',
-    '.....KKbbKK.....',
-    '.......KK.......',
+    '.....KKKKKK.....',
+    '...KKbbbbbbKK...',
+    '..KbbbbbbbbbbK..',
+    '.KbbbKKKKKKbbbK.',
+    '.KbbKKbbbbKKbbK.',
+    'KbbKKbbbbbbKbbbK',
+    'KbbKbbKKKKbbKbbK',
+    'KbbKbKKbbKKbKbbK',
+    'KbbKbKbbbKbKbbbK',
+    'KbbKbbKKKKbKbbbK',
+    'KbbbKbbbbbbKbbbK',
+    '.KbbKKbbbbbKbbK.',
+    '.KbbbKKKKKKbbbK.',
+    '..KbbbbbbbbbbK..',
+    '...KKbbbbbbKK...',
+    '.....KKKKKK.....',
   ],
 });
 
@@ -612,6 +677,7 @@ export const PIXEL_MAPS = deepFreeze({
   windCrescent: WIND_CRESCENT,
   waterDrop: WATER_DROP,
   teslaNode: TESLA_NODE,
+  waterWhirlpool: WATER_WHIRLPOOL,
   // plante
   plantBulb: PLANT_BULB,
   flower: FLOWER,

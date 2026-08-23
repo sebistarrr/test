@@ -11,10 +11,10 @@ GitHub Pages.
 | --- | --- | --- | --- |
 | **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme débordant + drain) |
 | **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
-| **Feu** | Lame ardente | brûlure qui colore et s'aggrave | Rage infernale (nova + ailes) |
-| **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
-| **Lumière** | Marteau d'aube | encaisse pour devenir puissante (bouclier qui convertit) | Piège radiant (trait doré) |
-| **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
+| **Feu** | Lame ardente (garde à gemme, flamme effilée) | brûlure qui **colore et cercle** sa victime | Rage infernale (nova + ailes) |
+| **Eau** | Trident des marées | tourbillons — **spirales en pixels** qui grandissent | Maelström (la même spirale, géante) |
+| **Lumière** | Marteau d’aube | encaisse pour devenir puissante (liseré doré qui convertit) | Piège radiant (trait doré, halo sur **elle**) |
+| **Foudre** | Lame fulgurante | **bobines** statiques + arcs en chaîne, halo bleu permanent | Surcharge (toile cyan) |
 | **Vent** | Shuriken de bourrasque (losange évidé, sans manche) | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
 | **Plante** | Liane fouettante (crochet en escalier de pixels) | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs (nuée de cubes roses) |
 
@@ -168,6 +168,9 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Shuriken du Vent              | losange évidé 74 px, double contour noir, 4 ergots gris, collé au corps |
 | Liane de la Plante            | arc de rayon 46,7 px sur 151°, rasterisé en blocs de 4 px |
 | Tempête de fleurs             | grappes de cubes `rgb(248,120,184)` de 11 à 26 px, aucun cerceau |
+| Tourbillon de l'Eau           | spirale en pixels, diamètre = la stat « Size » (70 → 150 px) |
+| Brûlure du Feu                | teinte du corps **et** anneau orange sur la victime |
+| Borne de la Foudre            | bobine de 34 px, halo bleu permanent sur le porteur |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
 **36 affrontements possibles** (3 seeds chacun), un duel dure **21 à 79 s**

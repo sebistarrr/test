@@ -8,8 +8,6 @@
  * @module game/abilities/zone
  */
 
-import { TAU } from '../../core/math.js';
-
 /**
  * @param {Array<any>} zones
  * @param {import('../fighter.js').Fighter} owner
@@ -54,33 +52,4 @@ export function tickZones(zones, owner, dt, now, game, spec) {
       }
     }
   }
-}
-
-/**
- * Spirale pixelisée : bras qui s'enroulent, utilisée pour l'eau.
- * @param {CanvasRenderingContext2D} ctx
- */
-export function drawSpiral(ctx, x, y, r, angle, { arms = 3, color, width = 5, turns = 1.2 }) {
-  ctx.save();
-  ctx.translate(x, y);
-  ctx.rotate(angle);
-  ctx.strokeStyle = color;
-  ctx.lineWidth = width;
-  ctx.lineCap = 'round';
-  for (let a = 0; a < arms; a++) {
-    ctx.beginPath();
-    const offset = (TAU * a) / arms;
-    const steps = 26;
-    for (let i = 0; i <= steps; i++) {
-      const t = i / steps;
-      const rad = r * (0.12 + 0.88 * t);
-      const th = offset + t * TAU * turns;
-      const px = Math.cos(th) * rad;
-      const py = Math.sin(th) * rad;
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-  }
-  ctx.restore();
 }
