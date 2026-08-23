@@ -177,7 +177,7 @@ const SHADOW = {
     stat: (f) => `Shadow Step Cooldown: ${formatSeconds(f.ability.cooldown)}`,
     statFr: (f) => `Pas d’ombre — recharge : ${formatSeconds(f.ability.cooldown)}`,
     color: '#870286',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -321,7 +321,7 @@ const ICE = {
     stat: (f) => `Damage/Slow: ${f.stacks}`,
     statFr: (f) => `Dégâts/Ralent. : ${f.stacks}`,
     color: '#00d5e6',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -460,7 +460,7 @@ const FIRE = {
     stats: [(f) => `Burn Damage/Duration: ${formatHalf(f.stacks)}`],
     statsFr: [(f) => `Brûlure — dégâts/durée : ${formatHalf(f.stacks)}`],
     color: '#e11d1d',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -633,7 +633,7 @@ const LIGHT = {
       (f) => `Recul : ${Math.round(f.stacks2)}`,
     ],
     color: '#d9b800',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -785,7 +785,7 @@ const WIND = {
       (f) => `Recharge : ${formatSeconds(f.ability.cooldown)}`,
     ],
     color: '#8a8163',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -906,7 +906,7 @@ const LIGHTNING = {
     stats: [(f) => `Chain Damage: ${formatHalf(f.stacks)}`],
     statsFr: [(f) => `Dégâts de chaîne : ${formatHalf(f.stacks)}`],
     color: '#d4c800',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -1039,7 +1039,7 @@ const WATER = {
       (f) => `Taille : ${Math.round(f.stacks2)}`,
     ],
     color: '#2f6fe0',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 
@@ -1232,7 +1232,7 @@ const PLANT = {
     stats: [(f) => `Bulb Damage/Heal: ${Math.round(f.stacks)}`],
     statsFr: [(f) => `Bulbe — dégâts/soin : ${Math.round(f.stacks)}`],
     color: '#16a02c',
-    stroke: '#0a0a0a',
+    stroke: '#f4eddc', // liseré clair : la ligne de stat est posée sur le fond sombre
   },
 };
 

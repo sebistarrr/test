@@ -47,14 +47,16 @@
 
 :root {
   /* --- couleurs mesurées sur la vidéo (pipette sur les frames) --- */
-  --paper:        #f9f1da;  /* fond hors-arène       rgb(249,241,218) */
+  --paper:        #1c1a26;  /* fond hors-arène — encre sombre         */
+  --plate:        #f9f1da;  /* plaque crème (jauges) rgb(249,241,218) */
   --arena:        #ffffff;  /* intérieur de l'arène                   */
   --ink:          #000000;  /* bordure d'arène / contours             */
   --shadow-body:  #870286;  /* boule Ombre           rgb(132,6,132)   */
   --shadow-glow:  #7c3aed;
   --ice-body:     #00eff0;  /* boule Glace           rgb(0,239,240)   */
   --ice-glow:     #22d3ee;
-  --muted:        #a8a8a8;  /* filigrane                              */
+  --muted:        #9b96ac;  /* textes secondaires sur fond sombre     */
+  --on-paper:     #f4eddc;  /* texte posé sur le fond sombre          */
 
   --font-heavy: 'Archivo Black', 'Arial Black', 'Helvetica Neue', sans-serif;
   --font-hud:   'Oswald', 'Arial Narrow', sans-serif;
@@ -70,7 +72,7 @@ html, body {
   margin: 0;
   height: 100%;
   background: var(--paper);
-  color: #1b1b1b;
+  color: var(--on-paper);
   font-family: var(--font-hud);
   overscroll-behavior: none;
 }
@@ -130,7 +132,7 @@ body {
   font-size: 5.4cqw;
   letter-spacing: 0.02em;
   margin: 0;
-  color: #17141d;
+  color: var(--on-paper);
 }
 
 /* --- slots gauche / droite --- */
@@ -143,6 +145,7 @@ body {
 .slot {
   appearance: none;
   background: #fff;
+  color: #17141d; /* panneau blanc */
   border: 0.9cqw solid #000;
   border-radius: 0;
   padding: 2cqw 2.6cqw;
@@ -164,7 +167,7 @@ body {
   font-size: 2.6cqw;
   font-weight: 700;
   letter-spacing: .18em;
-  color: #6b6b6b;
+  color: #7d7a88;
 }
 
 .slot-orb {
@@ -193,7 +196,7 @@ body {
 .select-hint {
   margin: 0;
   font-size: 2.8cqw;
-  color: #6b6b6b;
+  color: var(--muted);
   letter-spacing: .06em;
 }
 
@@ -209,6 +212,7 @@ body {
 .card {
   appearance: none;
   cursor: pointer;
+  color: #17141d; /* panneau blanc */
   padding: 1.4cqw 0.8cqw 1.8cqw;
   border: 0.7cqw solid #000;
   background: #fff;
@@ -240,6 +244,8 @@ body {
   text-align: left;
   font-size: 2.2cqw;
   line-height: 1.45;
+  /* panneau blanc : le texte y reste sombre, quel que soit le fond de page */
+  color: #17141d;
   box-shadow: 0.7cqw 0.7cqw 0 rgba(0,0,0,.85);
 }
 .element-sheet h3 {
@@ -257,6 +263,7 @@ body {
 /* --- boutons --- */
 .start-btn, .ghost-btn {
   appearance: none;
+  color: #17141d; /* boutons clairs */
   font-family: var(--font-heavy);
   font-size: 4cqw;
   padding: 2cqw 5cqw;
@@ -272,11 +279,12 @@ body {
 .ghost-btn { background: #fff; font-size: 3cqw; }
 
 /* --- écran de résultat --- */
-#screen-result { background: rgba(249,241,218,.94); }
+#screen-result { background: rgba(28,26,38,.94); }
 .result-card {
   border: 1cqw solid #000;
   background: #fff;
   padding: 5cqw 6cqw;
+  color: #17141d; /* panneau blanc */
   box-shadow: 1cqw 1cqw 0 rgba(0,0,0,.85);
   display: flex;
   flex-direction: column;

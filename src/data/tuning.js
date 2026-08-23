@@ -13,7 +13,22 @@ import { deepFreeze } from './freeze.js';
 export const STAGE = deepFreeze({
   width: 720, // = résolution de la vidéo source
   height: 1280,
-  paper: '#f9f1da', // pipette hors-arène : rgb(249,241,218)
+  /**
+   * Fond hors-arène. La vidéo est sur papier crème `rgb(249,241,218)` ; le site
+   * lui préfère une **encre sombre**. Seul ce pourtour change : l'arène reste
+   * blanche, donc tout le pixel-art garde exactement ses contours noirs.
+   */
+  paper: '#1c1a26',
+  /**
+   * Contour du « chrome » posé **sur** ce fond sombre (titre, lignes de stat) :
+   * un noir y disparaîtrait, on passe donc au crème du papier d'origine.
+   */
+  outline: '#f4eddc',
+  /**
+   * Fond des jauges d'ultime : la plaque crème est conservée pour que
+   * l'intérieur des jauges reste identique à la vidéo, libellé noir compris.
+   */
+  plate: '#f9f1da',
 });
 
 export const ARENA = deepFreeze({
@@ -42,18 +57,11 @@ export const TITLE = deepFreeze({
   fontSize: 58,
   gap: 14, // espace entre les blocs texte/icône
   iconSize: 52,
-  vsColor: '#ffffff',
+  /** Sur fond sombre, le « VS » devient une lettre évidée à liseré clair. */
+  vsColor: '#1c1a26',
   vsSize: 40,
-  stroke: '#000000',
+  stroke: '#f4eddc', // crème (voir STAGE.outline)
   strokeWidth: 7,
-});
-
-export const WATERMARK = deepFreeze({
-  text: '@ElementalArmoryLeague',
-  centerX: 360,
-  baseline: 930, // mesuré : lignes 908→932
-  fontSize: 26,
-  color: 'rgba(120,120,120,0.42)',
 });
 
 export const HUD = deepFreeze({

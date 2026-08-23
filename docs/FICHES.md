@@ -37,6 +37,15 @@ Les fiches sont **immuables** : `deepFreeze` les gèle au chargement du module e
 `assertFrozen()` le revérifie au lancement de chaque duel. Un duel ne peut donc
 pas déteindre sur le suivant.
 
+**Un seul écart volontaire au relevé** : le fond hors-arène. La vidéo est sur
+papier crème `rgb(249,241,218)`, le site l'a remplacé par une encre sombre
+`#1c1a26` (`STAGE.paper`), et le filigrane de la chaîne n'est pas reproduit.
+L'arène, elle, reste blanche : tout le pixel-art garde donc exactement ses
+contours noirs mesurés. Seul le « chrome » posé sur le fond sombre change de
+liseré — titre et lignes de stat passent au crème `STAGE.outline`, et les jauges
+d'ultime gardent une **plaque crème** pour que leur intérieur reste celui de la
+vidéo, libellé noir compris.
+
 ---
 
 ## ⬤ OMBRE — `shadow` (affiché « DARK »)

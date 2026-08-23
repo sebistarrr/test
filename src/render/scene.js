@@ -1,7 +1,7 @@
 /**
- * Décor **statique** : papier crème, bandeau de titre, cadre d'arène,
- * filigrane. Rien ne bouge ici — conformément au cahier des charges, le fond
- * ne change jamais pendant le duel.
+ * Décor **statique** : fond sombre, bandeau de titre, cadre d'arène. Rien ne
+ * bouge ici — conformément au cahier des charges, le fond ne change jamais
+ * pendant le duel.
  *
  * Le décor est rasterisé une fois dans un canvas hors écran, puis blitté en
  * une seule opération à chaque frame.
@@ -9,7 +9,7 @@
  * @module render/scene
  */
 
-import { ARENA, STAGE, TITLE, WATERMARK } from '../data/tuning.js';
+import { ARENA, STAGE, TITLE } from '../data/tuning.js';
 import { drawSpriteCentered } from './sprites.js';
 
 /** @type {HTMLCanvasElement|null} */
@@ -30,13 +30,12 @@ export function buildBackdrop({ a, b, lang }) {
   const ctx = cv.getContext('2d');
   ctx.imageSmoothingEnabled = false;
 
-  // fond papier
+  // fond
   ctx.fillStyle = STAGE.paper;
   ctx.fillRect(0, 0, STAGE.width, STAGE.height);
 
   drawTitle(ctx, a, b, lang);
   drawArena(ctx);
-  drawWatermark(ctx);
 
   cache = cv;
   cacheKey = key;
@@ -57,16 +56,6 @@ function drawArena(ctx) {
   ctx.lineWidth = border;
   ctx.lineJoin = 'miter';
   ctx.strokeRect(x + border / 2, y + border / 2, size - border, size - border);
-}
-
-function drawWatermark(ctx) {
-  ctx.save();
-  ctx.font = `600 ${WATERMARK.fontSize}px "Oswald", "Arial Narrow", sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = WATERMARK.color;
-  ctx.fillText(WATERMARK.text, WATERMARK.centerX, WATERMARK.baseline);
-  ctx.restore();
 }
 
 /**

@@ -79,7 +79,7 @@ src/
 │   └── freeze.js          deepFreeze + garde-fou d'immutabilité
 ├── render/
 │   ├── canvas.js          repère logique 720x1280, DPR, pixel-perfect
-│   ├── scene.js           décor statique (titre, arène, filigrane) mis en cache
+│   ├── scene.js           décor statique (fond, titre, arène) mis en cache
 │   ├── sprites.js         banque de sprites + overrides PNG
 │   ├── pixelart.js        compilation pixel-map → canvas
 │   ├── hud.js             jauges d'ultime + ligne de stat
@@ -146,7 +146,7 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 
 | Élément mesuré                | Valeur relevée                    |
 | ----------------------------- | --------------------------------- |
-| Fond hors-arène               | `rgb(249,241,218)`                |
+| Fond hors-arène               | `rgb(249,241,218)` sur la vidéo — **le site l'a remplacé par une encre sombre `#1c1a26`**, seul écart volontaire au relevé ; l'arène reste blanche |
 | Arène                         | carré 640 × 640 à (40, 320), bord noir 6 px |
 | Boule                         | rayon 41 px, contour noir 5 px    |
 | Boule Ombre / Glace           | `#870286` / `#00eff0`             |

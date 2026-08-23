@@ -5,7 +5,7 @@
  * @module render/hud
  */
 
-import { HUD } from '../data/tuning.js';
+import { HUD, STAGE } from '../data/tuning.js';
 import { clamp } from '../core/math.js';
 import { drawFittedText } from './text.js';
 
@@ -30,6 +30,11 @@ function drawBar(ctx, f, side, value, lang) {
   const x = side === 'left' ? b.leftX : b.rightX;
   const v = clamp(value, 0, 1);
   const anchorRight = (ult.barAnchor ?? 'left') === 'right';
+
+  // plaque crème : l'intérieur de la jauge reste celui de la vidéo, même sur
+  // le fond sombre — le libellé peut donc garder son contour noir
+  ctx.fillStyle = STAGE.plate;
+  ctx.fillRect(x, b.y, b.width, b.height);
 
   // remplissage
   const w = b.width * v;
