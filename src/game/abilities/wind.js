@@ -141,38 +141,66 @@ export const windAbilities = {
     }
   },
 
-  /** Rafale : un tourbillon de lames d'air, très bref. */
+  /**
+   * Rafale : un **disque flou couleur sable** fait de larges pales en éventail
+   * qui rayonnent du centre — c'est le motif relevé image par image, et non
+   * des cercles concentriques. Chaque pale est un fuseau incurvé, dessiné sans
+   * aucun contour, et le cœur reste plus dense et plus chaud.
+   */
   drawUnder(ctx, f) {
     const t = f.el.ability.tornado;
     for (const g of f.state.gusts) {
       const k = g.life / g.max; // 1 → 0
       ctx.save();
-      ctx.globalAlpha = Math.min(1, k * 1.4);
+      ctx.globalAlpha = Math.min(1, k * 1.5);
       ctx.translate(g.x, g.y);
       ctx.rotate(g.angle);
 
-      const r = g.r * (0.65 + 0.35 * (1 - k)); // le tourbillon s'ouvre
-      const grad = ctx.createRadialGradient(0, 0, r * 0.1, 0, 0, r);
-      grad.addColorStop(0, 'rgba(240,234,214,0.9)');
-      grad.addColorStop(1, t.color);
+      const r = g.r * (0.72 + 0.28 * (1 - k)); // le tourbillon s'ouvre
+
+      // halo de fond : le disque entier, très dilué sur le bord
+      const grad = ctx.createRadialGradient(0, 0, r * 0.06, 0, 0, r);
+      grad.addColorStop(0, t.core);
+      grad.addColorStop(0.55, t.color);
+      grad.addColorStop(1, t.edge);
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, TAU);
       ctx.fill();
 
-      // lames d'air enroulées
-      ctx.strokeStyle = t.edge;
-      ctx.lineWidth = 5;
-      ctx.lineCap = 'round';
+      // pales en éventail : larges fuseaux qui partent du cœur et s'évasent,
+      // volontairement en recouvrement pour retrouver le flou de la vidéo
+      ctx.fillStyle = t.color;
+      const span = TAU / t.blades;
       for (let i = 0; i < t.blades; i++) {
-        const a0 = (TAU * i) / t.blades;
+        const a0 = span * i;
+        const a1 = a0 + span * 1.45; // > span : les pales se chevauchent
         ctx.beginPath();
-        ctx.arc(0, 0, r * 0.62, a0, a0 + 1.1);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(0, 0, r * 0.9, a0 + 0.5, a0 + 1.5);
-        ctx.stroke();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(
+          Math.cos(a0 + span * 0.2) * r * 0.62,
+          Math.sin(a0 + span * 0.2) * r * 0.62,
+          Math.cos(a0 + span * 0.55) * r,
+          Math.sin(a0 + span * 0.55) * r,
+        );
+        ctx.arc(0, 0, r, a0 + span * 0.55, a1 - span * 0.55);
+        ctx.quadraticCurveTo(
+          Math.cos(a1 - span * 0.2) * r * 0.62,
+          Math.sin(a1 - span * 0.2) * r * 0.62,
+          0,
+          0,
+        );
+        ctx.fill();
       }
+
+      // cœur plus dense, légèrement décentré comme sur la vidéo
+      const core = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.42);
+      core.addColorStop(0, t.core);
+      core.addColorStop(1, 'rgba(168,152,124,0)');
+      ctx.fillStyle = core;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 0.42, 0, TAU);
+      ctx.fill();
       ctx.restore();
     }
   },

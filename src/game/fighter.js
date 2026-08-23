@@ -335,18 +335,22 @@ export class Fighter {
     ctx.translate(this.x, this.y);
     ctx.rotate(this.weaponAngle);
 
-    // manche : rectangle sombre + liseré, comme sur la vidéo
+    // manche : rectangle sombre + liseré, comme sur la vidéo.
+    // `width: 0` = arme posée à même la boule (shuriken du Vent) : rien à tracer,
+    // `length` ne sert plus qu'à décaler le sprite.
     const h = w.handle;
-    const half = h.width / 2;
-    ctx.fillStyle = h.outline;
-    ctx.fillRect(-2, -half - 2, h.length + 4, h.width + 4);
-    ctx.fillStyle = h.color;
-    ctx.fillRect(0, -half, h.length, h.width);
-    ctx.fillStyle = h.dark;
-    ctx.fillRect(0, 0, h.length, half); // moitié basse plus sombre (volume)
-    if (h.gem) {
-      ctx.fillStyle = h.gem.color;
-      ctx.fillRect(h.length * h.gem.at - h.gem.size / 2, -h.gem.size / 2, h.gem.size, h.gem.size);
+    if (h.width > 0) {
+      const half = h.width / 2;
+      ctx.fillStyle = h.outline;
+      ctx.fillRect(-2, -half - 2, h.length + 4, h.width + 4);
+      ctx.fillStyle = h.color;
+      ctx.fillRect(0, -half, h.length, h.width);
+      ctx.fillStyle = h.dark;
+      ctx.fillRect(0, 0, h.length, half); // moitié basse plus sombre (volume)
+      if (h.gem) {
+        ctx.fillStyle = h.gem.color;
+        ctx.fillRect(h.length * h.gem.at - h.gem.size / 2, -h.gem.size / 2, h.gem.size, h.gem.size);
+      }
     }
 
     // tête d'arme (sprite)

@@ -8,9 +8,11 @@
  *    « Bulb Damage/Heal » — le seul élément du roster capable de remonter ses
  *    points de vie. Un bulbe mûr tire aussi une fleur sur l'adversaire.
  *
- *  • Tempête de fleurs (ultime) — l'adversaire est enfermé dans un cerceau de
- *    lianes (le motif vert à nœuds clairs de la vidéo) et battu par une nuée
- *    de pétales roses ; la Plante se régénère pendant toute la durée.
+ *  • Tempête de fleurs (ultime) — l'adversaire disparaît sous une **nuée de
+ *    cubes roses** : des grappes de carrés plats et opaques, toujours alignés
+ *    sur les axes, mêlées de quelques corolles. C'est tout ce que montrent les
+ *    vidéos — pas de cerceau. La cible est clouée sur place et la Plante se
+ *    régénère pendant toute la durée.
  *
  * L'arme est également particulière : une **liane courbe**, dessinée ici en
  * tracé plutôt qu'en sprite droit (voir `drawWeapon`).
@@ -21,6 +23,129 @@
 import { TAU, clamp, dist } from '../../core/math.js';
 import { drawSpriteCentered } from '../../render/sprites.js';
 import { PIXEL_MAPS } from '../../data/pixelmaps.js';
+import { compilePixelMap } from '../../render/pixelart.js';
+
+/* ------------------------------------------------------------------ */
+/* Liane : rasterisation en escalier de pixels                         */
+/* ------------------------------------------------------------------ */
+
+/** Hachage déterministe → [0,1[ : sert au rendu seul, jamais à la simulation. */
+function hash01(x) {
+  const v = Math.sin(x) * 43758.5453;
+  return v - Math.floor(v);
+}
+
+/** Palette de la liane rasterisée (les couleurs viennent de la fiche). */
+const VINE_KEYS = { outline: 'K', body: 'g', light: 'l', shine: 's', stem: 'b', stemDark: 'd' };
+
+/** Sprite compilé une fois pour toutes : la géométrie ne change jamais. */
+let vineSprite = null;
+
+/**
+ * Épaisseur relative le long de la liane : fine au départ, la plus large juste
+ * après la crête, puis effilée jusqu'au crochet (relevé sur la vidéo).
+ * @param {number} t 0 au pédoncule, 1 au bout
+ */
+function vineProfile(t) {
+  return (0.62 + 0.38 * Math.sin(Math.PI * t ** 0.75)) * (1 - 0.22 * t * t);
+}
+
+/**
+ * Construit le sprite de la liane : on échantillonne l'arc, on **quantifie**
+ * chaque coup de pinceau sur une grille de `block` px, puis on compile la
+ * grille comme n'importe quel autre pixel-art. Résultat : le même escalier de
+ * blocs que la vidéo, et une rotation en plus-proche-voisin (donc chunky) au
+ * lieu d'un tracé lissé.
+ *
+ * @param {any} w la partie `weapon` de la fiche
+ */
+function buildVineSprite(w) {
+  const v = w.vine;
+  const h = w.handle;
+  const b = v.block;
+
+  // centre de l'arc : le point de départ doit tomber au bout du pédoncule
+  const cx = h.length - Math.cos(v.start) * v.radius;
+  const cy = -Math.sin(v.start) * v.radius;
+
+  // boîte englobante généreuse, en px de scène
+  const pad = v.width + v.outlineWidth * 2 + b;
+  const minX = Math.min(24, cx - v.radius - pad);
+  const maxX = cx + v.radius + pad;
+  const minY = cy - v.radius - pad;
+  const maxY = cy + v.radius + pad;
+  const cols = Math.ceil((maxX - minX) / b);
+  const rows = Math.ceil((maxY - minY) / b);
+  const grid = Array.from({ length: rows }, () => new Array(cols).fill('.'));
+
+  const stampDisc = (x, y, r, ch) => {
+    const i0 = Math.max(0, Math.floor((x - r - minX) / b));
+    const i1 = Math.min(cols - 1, Math.floor((x + r - minX) / b));
+    const j0 = Math.max(0, Math.floor((y - r - minY) / b));
+    const j1 = Math.min(rows - 1, Math.floor((y + r - minY) / b));
+    for (let i = i0; i <= i1; i++) {
+      for (let j = j0; j <= j1; j++) {
+        const dx = minX + (i + 0.5) * b - x;
+        const dy = minY + (j + 0.5) * b - y;
+        if (dx * dx + dy * dy <= r * r) grid[j][i] = ch;
+      }
+    }
+  };
+
+  const stampRect = (x0, y0, x1, y1, ch) => {
+    const i0 = Math.max(0, Math.floor((x0 - minX) / b));
+    const i1 = Math.min(cols - 1, Math.floor((x1 - minX) / b));
+    const j0 = Math.max(0, Math.floor((y0 - minY) / b));
+    const j1 = Math.min(rows - 1, Math.floor((y1 - minY) / b));
+    for (let i = i0; i <= i1; i++) for (let j = j0; j <= j1; j++) grid[j][i] = ch;
+  };
+
+  // 1. pédoncule brun (il part de sous la boule pour qu'aucun trou n'apparaisse)
+  const stemHalf = h.width / 2;
+  const stemFrom = 26;
+  stampRect(stemFrom, -stemHalf - v.outlineWidth, h.length, stemHalf + v.outlineWidth, VINE_KEYS.outline);
+  stampRect(stemFrom, -stemHalf, h.length - b, stemHalf, VINE_KEYS.stem);
+  stampRect(stemFrom, 0.5, h.length - b, stemHalf, VINE_KEYS.stemDark);
+
+  // 2. la liane, passe après passe : contour, corps, reflet, brillance
+  const N = 200;
+  const passes = [
+    { key: VINE_KEYS.outline, radius: v.radius, k: 0.5, extra: v.outlineWidth },
+    { key: VINE_KEYS.body, radius: v.radius, k: 0.5, extra: 0 },
+    { key: VINE_KEYS.light, radius: v.radius - v.width * 0.22, k: 0.2, extra: 0 },
+    { key: VINE_KEYS.shine, radius: v.radius - v.width * 0.3, k: 0.15, extra: 0 },
+  ];
+  for (const p of passes) {
+    for (let i = 0; i <= N; i++) {
+      const t = i / N;
+      const a = v.start + v.sweep * t;
+      const r = v.width * p.k * vineProfile(t) + p.extra;
+      stampDisc(cx + Math.cos(a) * p.radius, cy + Math.sin(a) * p.radius, r, p.key);
+    }
+  }
+
+  const map = {
+    w: cols,
+    h: rows,
+    palette: {
+      [VINE_KEYS.outline]: v.outline,
+      [VINE_KEYS.body]: v.body,
+      [VINE_KEYS.light]: v.light,
+      [VINE_KEYS.shine]: v.shine,
+      [VINE_KEYS.stem]: h.color,
+      [VINE_KEYS.stemDark]: h.dark,
+    },
+    rows: grid.map((r) => r.join('')),
+  };
+
+  return {
+    canvas: compilePixelMap(map, 4),
+    x: minX,
+    y: minY,
+    w: cols * b,
+    h: rows * b,
+  };
+}
 
 export const plantAbilities = {
   id: 'plant',
@@ -30,7 +155,7 @@ export const plantAbilities = {
     f.state.bulbs = [];
     f.state.stormTick = 0;
     f.state.stormHeal = 0;
-    f.state.cageAngle = 0;
+    f.state.stormSpin = 0; // angle de la nuée : rendu seul
   },
 
   update(f, dt, now, game) {
@@ -87,7 +212,7 @@ export const plantAbilities = {
     const ult = el.ultimate;
     if (f.ult.active > 0) {
       f.ult.active -= dt;
-      f.state.cageAngle += ult.storm.cage.spin * dt;
+      f.state.stormSpin += ult.storm.swarm.churn * dt;
       this.tickStorm(f, dt, now, game);
       if (f.ult.active <= 0) {
         f.ult.active = 0;
@@ -185,62 +310,17 @@ export const plantAbilities = {
   /* ------------------------------------------------------------------ */
 
   /**
-   * Liane courbe : un arc épais à contour noir, avec un reflet clair sur le
-   * dessus et une pointe plus vive — le tracé remplace le sprite droit des
-   * autres armes.
+   * Liane : pédoncule brun puis grand crochet vert, le tout **en escalier de
+   * pixels** comme sur la vidéo (voir `buildVineSprite`). Le sprite est
+   * compilé une seule fois puis simplement blitté et tourné.
    * @param {CanvasRenderingContext2D} ctx
    */
   drawWeapon(ctx, f) {
-    const w = f.el.weapon;
-    const v = w.vine;
-    const h = w.handle;
-
+    const s = (vineSprite ??= buildVineSprite(f.el.weapon));
     ctx.save();
     ctx.translate(f.x, f.y);
     ctx.rotate(f.weaponAngle);
-
-    // tige brune
-    const half = h.width / 2;
-    ctx.fillStyle = h.outline;
-    ctx.fillRect(-2, -half - 2, h.length + 4, h.width + 4);
-    ctx.fillStyle = h.color;
-    ctx.fillRect(0, -half, h.length, h.width);
-    ctx.fillStyle = h.dark;
-    ctx.fillRect(0, 0, h.length, half);
-
-    // arc de liane : rayon et angles déduits de la longueur et de l'ouverture
-    const radius = v.length / v.curve;
-    const cx = h.length;
-    const cy = -radius; // centre de l'arc au-dessus de l'axe → la liane s'enroule
-    ctx.lineCap = 'round';
-    for (const pass of ['outline', 'body', 'light']) {
-      ctx.beginPath();
-      ctx.arc(cx, cy, radius, Math.PI / 2, Math.PI / 2 - v.curve, true);
-      if (pass === 'outline') {
-        ctx.strokeStyle = v.outline;
-        ctx.lineWidth = v.width + 6;
-      } else if (pass === 'body') {
-        ctx.strokeStyle = v.body;
-        ctx.lineWidth = v.width;
-      } else {
-        ctx.strokeStyle = v.light;
-        ctx.lineWidth = v.width * 0.34;
-        ctx.beginPath();
-        ctx.arc(cx, cy - v.width * 0.26, radius, Math.PI / 2, Math.PI / 2 - v.curve * 0.92, true);
-      }
-      ctx.stroke();
-    }
-
-    // bourgeon au bout
-    const tipA = Math.PI / 2 - v.curve;
-    ctx.beginPath();
-    ctx.arc(cx + Math.cos(tipA) * radius, cy + Math.sin(tipA) * radius, v.width * 0.42, 0, TAU);
-    ctx.fillStyle = v.tip;
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = v.outline;
-    ctx.stroke();
-
+    ctx.drawImage(s.canvas, s.x, s.y, s.w, s.h);
     ctx.restore();
   },
 
@@ -258,39 +338,66 @@ export const plantAbilities = {
     }
   },
 
-  /** Cerceau de lianes autour de la cible pendant la tempête. */
-  drawOver(ctx, f) {
+  /**
+   * Tempête de fleurs : la **nuée de cubes roses** qui recouvre la cible. Sur
+   * les vidéos, l'ultime n'est fait que de ça — des grappes de carrés plats et
+   * opaques, alignés sur les axes, denses au point de masquer complètement
+   * l'adversaire, plus quelques corolles emportées avec elles.
+   */
+  drawOver(ctx, f, game, now) {
     if (f.ult.active <= 0) return;
-    const cage = f.el.ultimate.storm.cage;
     const target = f.opponent;
     if (!target || !target.alive) return;
-
-    const r = target.radius * cage.scale;
     const fade = Math.min(1, f.ult.active / 0.5);
+    this.drawSwarm(ctx, f.el.ultimate.storm.swarm, target, f.state.stormSpin, fade);
+  },
+
+  /**
+   * Amas de cubes roses qui recouvre la cible. Rendu **pur** : la disposition
+   * vient d'un hachage déterministe de l'indice et de l'angle de tempête,
+   * jamais du RNG de simulation — un même `?seed=` reste rejouable au pixel
+   * près. Les carrés ne tournent jamais : ils restent alignés sur les axes,
+   * comme sur la vidéo.
+   */
+  drawSwarm(ctx, sw, target, spin, fade) {
+    if (!sw) return;
     ctx.save();
     ctx.globalAlpha = fade;
-    ctx.translate(target.x, target.y);
-    ctx.rotate(f.state.cageAngle);
+    ctx.fillStyle = sw.color;
+    const reach = target.radius * sw.radius;
 
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, TAU);
-    ctx.strokeStyle = '#0d1f0a';
-    ctx.lineWidth = cage.width + 5;
-    ctx.stroke();
-    ctx.strokeStyle = cage.color;
-    ctx.lineWidth = cage.width;
-    ctx.stroke();
+    for (let c = 0; c < sw.clusters; c++) {
+      const u = hash01(c * 12.9898);
+      const w = hash01(c * 78.233 + 4.7);
+      const a = u * TAU + spin * (0.4 + w * 0.9);
+      const rad = reach * (0.06 + 0.94 * w * w); // masse ramenée vers le centre
+      const cx = target.x + Math.cos(a) * rad;
+      const cy = target.y + Math.sin(a) * rad;
 
-    // nœuds clairs répartis sur le cerceau (observés sur la vidéo)
-    const s = cage.width * 1.25;
-    for (let i = 0; i < cage.studs; i++) {
-      const a = (TAU * i) / cage.studs;
-      const x = Math.cos(a) * r;
-      const y = Math.sin(a) * r;
-      ctx.fillStyle = '#0d1f0a';
-      ctx.fillRect(x - s / 2 - 2, y - s / 2 - 2, s + 4, s + 4);
-      ctx.fillStyle = cage.stud;
-      ctx.fillRect(x - s / 2, y - s / 2, s, s);
+      for (let k = 0; k < sw.perCluster; k++) {
+        const i = c * 7 + k;
+        const p = hash01(i * 31.7 + 1.3);
+        const q = hash01(i * 53.1 + 9.1);
+        const s = Math.round(sw.size * (1 - sw.sizeVar + sw.sizeVar * 2 * p));
+        const x = cx + (p - 0.5) * sw.spread * 2;
+        const y = cy + (q - 0.5) * sw.spread * 2;
+        ctx.fillRect(Math.round(x - s / 2), Math.round(y - s / 2), s, s);
+      }
+    }
+
+    // quelques corolles qui volent dans la nuée, chacune à son propre rythme
+    for (let i = 0; i < sw.flowers; i++) {
+      const u = hash01(i * 17.3 + 2.9);
+      const w = hash01(i * 41.9 + 6.2);
+      const a = u * TAU + spin * (0.45 + w);
+      const rad = reach * (0.25 + 0.6 * w);
+      drawSpriteCentered(
+        ctx,
+        'flower',
+        target.x + Math.cos(a) * rad,
+        target.y + Math.sin(a) * rad,
+        sw.flowerSize,
+      );
     }
     ctx.restore();
   },

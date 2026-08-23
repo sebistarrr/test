@@ -211,29 +211,44 @@ export const LIGHT_HAMMER_HEAD = deepFreeze({
   ],
 });
 
-/** VENT — shuriken en losange évidé, collé au corps (manche très court). */
+/**
+ * VENT — shuriken en **losange évidé**, collé au corps (aucun manche visible).
+ *
+ * Relevé image par image sur WIND vs PLANT : anneau en losange de ~74 px de
+ * pointe à pointe, **double contour noir épais** (extérieur *et* intérieur du
+ * trou), corps crème dégradé (clair côté intérieur, plus chaud côté extérieur)
+ * et **quatre ergots gris** qui dépassent aux quatre pointes.
+ */
 export const WIND_SHURIKEN = deepFreeze({
-  w: 13,
-  h: 13,
+  w: 17,
+  h: 17,
   palette: {
-    K: '#3a3016',
-    t: '#d9c89a', // tan
-    l: '#f4ecd2', // reflet
+    K: '#0c0a06', // contour, aussi noir que celui des boules
+    t: '#e5d2a8', // crème (pipette : rgb(232,220,192))
+    l: '#f8f2e0', // reflet, côté intérieur
+    s: '#c5a97c', // ombre chaude, côté extérieur
+    g: '#bdbcb2', // ergot gris aux pointes
   },
+  // Compté bloc par bloc sur la vidéo, du bout de gauche vers le centre :
+  // ergot, 2 blocs noirs, 2 blocs crème, 2 blocs noirs, puis le trou.
   rows: [
-    '......K......',
-    '.....KtK.....',
-    '....KtltK....',
-    '...KttKttK...',
-    '..KttK.KttK..',
-    '.KttK...KttK.',
-    'KltK.....KtlK',
-    '.KttK...KttK.',
-    '..KttK.KttK..',
-    '...KttKttK...',
-    '....KtltK....',
-    '.....KtK.....',
-    '......K......',
+    '........g........',
+    '........K........',
+    '.......KKK.......',
+    '......KKtKK......',
+    '.....KKtltKK.....',
+    '....KKtlKltKK....',
+    '...KKtlKKKtsKK...',
+    '..KKtlKK.KKtsKK..',
+    'gKKtlKK...KKtsKKg',
+    '..KKtlKK.KKtsKK..',
+    '...KKttKKKtsKK...',
+    '....KKstKtsKK....',
+    '.....KKstsKK.....',
+    '......KKsKK......',
+    '.......KKK.......',
+    '........K........',
+    '........g........',
   ],
 });
 
@@ -300,26 +315,38 @@ export const EMBER = deepFreeze({
   rows: ['..KKK..', '.KoyoK.', 'KoywyoK', 'KywwwyK', 'KoywyoK', '.KoyoK.', '..KKK..'],
 });
 
-/** VENT — croissant de lame d'air, sans contour (dégradé doux comme la vidéo). */
+/**
+ * VENT — croissant de lame d'air : **aucun contour noir**, un vrai croissant
+ * (deux cercles décalés) au dégradé doux. Relevé sur WIND vs PLANT : la corne
+ * qui traîne est vert-olive sombre, le ventre qui mène est crème, et le dos
+ * convexe porte un liseré clair.
+ */
 export const WIND_CRESCENT = deepFreeze({
-  w: 12,
-  h: 14,
-  palette: { d: '#b3a887', t: '#cfc6a8', l: '#eee7d0' },
+  w: 16,
+  h: 16,
+  palette: {
+    d: '#8e7c52', // corne sombre
+    t: '#b1a082', // corps
+    w: '#c7b99a', // éclairci
+    l: '#e6ddc4', // liseré du dos convexe
+  },
   rows: [
-    '.......ddd..',
-    '.....ddtttd.',
-    '....dtttlttd',
-    '...dtttl..tt',
-    '..dtttl....t',
-    '..dttl......',
-    '..dtt.......',
-    '..dtt.......',
-    '..dttl......',
-    '..dtttl....t',
-    '...dtttl..tt',
-    '....dtttlttd',
-    '.....ddtttd.',
-    '.......ddd..',
+    '.....ddwwww.....',
+    '......ddttww....',
+    '.......ddtttw...',
+    '........dddttw..',
+    '........ddddtww.',
+    '.........tttwwl.',
+    '.........ttttwl.',
+    '.........ttttwl.',
+    '.........ttttwl.',
+    '.........ttttwl.',
+    '.........tttwwl.',
+    '........tttwwl..',
+    '........ttwwll..',
+    '.......twwwll...',
+    '......ttwwll....',
+    '.....ttlll......',
   ],
 });
 
@@ -478,49 +505,67 @@ export const ICON_DROPLET = deepFreeze({
  * Relevé : vidéos PLANT vs FIRE / ICE vs PLANT / DARK vs PLANT.
  * (La liane, elle, est dessinée en courbe par game/abilities/plant.js.)
  * ------------------------------------------------------------------ */
+/**
+ * PLANTE — bulbe semé : une **cosse verte bombée** au gros contour noir,
+ * surmontée d'un pédoncule noir et de deux feuilles sombres, avec deux petites
+ * pattes noires en dessous. Relevé : ~29 × 34 px dans l'arène.
+ */
 export const PLANT_BULB = deepFreeze({
-  w: 9,
-  h: 11,
+  w: 11,
+  h: 15,
   palette: {
-    K: '#4a6b4a', // contour vert-gris
-    b: '#cfe8bf', // bulbe pâle
-    l: '#8fce7a', // feuilles
-    w: '#eef7e6', // reflet
+    K: '#0a0a0a', // contour noir franc (comme la vidéo)
+    v: '#2e7a44', // feuilles, plus sombres que la cosse
+    g: '#5aa832', // cosse
+    l: '#79c94f', // éclairci
+    w: '#a8de7c', // reflet en haut à gauche
+    s: '#3b7d1e', // ombre à droite
   },
   rows: [
-    '..K...K..',
-    '.KlK.KlK.',
-    '.KllKllK.',
-    '..KlllK..',
-    '...KlK...',
-    '..KbbbK..',
-    '.KbwwbbK.',
-    'KbwwbbbbK',
-    'KbwbbbbbK',
-    '.KbbbbbK.',
-    '..KKKKK..',
+    '..K.....K..',
+    '..KvK.KvK..',
+    '..KvvKvvK..',
+    '...KvvvK...',
+    '....KKK....',
+    '...KKKKK...',
+    '..KwwlllK..',
+    '.KwwlllggK.',
+    'KwlllgggggK',
+    'KwlllgggssK',
+    'KlllgggsssK',
+    '.KllgggssK.',
+    '..KKgggKK..',
+    '...KKKKK...',
+    '..KK...KK..',
   ],
 });
 
+/**
+ * PLANTE — fleur projectile : corolle rose à **contour noir épais** et **cœur
+ * doré**, ~40 px, tirée par les bulbes mûrs et emportée par la tempête.
+ */
 export const FLOWER = deepFreeze({
-  w: 9,
-  h: 9,
+  w: 11,
+  h: 11,
   palette: {
-    K: '#a3316b',
-    p: '#f472b6', // pétale
-    P: '#ec4899', // pétale sombre
-    y: '#fde047', // cœur
+    K: '#100309', // contour noir
+    p: '#e878b0', // pétale (pipette : rgb(232,120,176))
+    P: '#c9518f', // pétale à l'ombre
+    y: '#f0b53c', // cœur doré
+    w: '#fbe9b8', // point de lumière au cœur
   },
   rows: [
-    '..KK.KK..',
-    '.KppKppK.',
-    'KpppppppK',
-    'KppPyPppK',
-    'KppyyyppK',
-    'KppPyPppK',
-    'KpppppppK',
-    '.KppKppK.',
-    '..KK.KK..',
+    '...KK.KK...',
+    '..KppKppK..',
+    '.KpppppppK.',
+    'KpppPPPpppK',
+    'KppPPywPppK',
+    'KppPyyyPppK',
+    'KppPPyyPppK',
+    'KpppPPPpppK',
+    '.KpppppppK.',
+    '..KppKppK..',
+    '...KK.KK...',
   ],
 });
 

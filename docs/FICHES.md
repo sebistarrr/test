@@ -273,15 +273,17 @@ bleuté posé sur son jaune. Cette teinte d'état est désormais générique :
 | --- | --- | --- |
 | Corps | rayon 41 px, `#bcbf9e`, contour noir 5 px | mesuré |
 | Déplacement | **500 px/s**, virage 2,2 rad/s — le plus mobile du roster | mesuré |
-| Arme | *Shuriken de bourrasque* — portée 105 px (arme collée au corps), manche 45 px + sprite `windShuriken` ×4,6 (60 × 60 px) | mesuré |
+| Arme | *Shuriken de bourrasque* — portée 105 px, **aucun manche** (le losange est posé à même la boule), sprite `windShuriken` 17 × 17 ×4,35 soit **74 × 74 px** | mesuré |
+| Détail du shuriken | anneau en losange évidé : **double contour noir** (extérieur *et* pourtour du trou), corps crème dégradé — clair côté intérieur, chaud côté extérieur — et **quatre ergots gris** qui dépassent aux pointes | mesuré |
 | Rotation d'arme | 6,34 rad/s (× 1,1 par rapport au reste du roster) | mesuré |
 | Corps à corps | 3 PV / 1 s (la cadence la plus rapide), ralentit de 12 % | calé |
 | **Tornade** | **rafale de 0,2 s, rayon 125 px, centrée sur le Vent lui-même** — pas un vortex lancé au loin ni une zone qui dure | mesuré |
+| Aspect de la rafale | **disque flou couleur sable** fait de 9 larges pales en éventail qui rayonnent du centre et se chevauchent, cœur plus dense (`rgb(168,152,124)`), bord franc — pas des cercles concentriques | mesuré |
 | Effet de la rafale | `stat / 2` PV et une projection de 430 à qui se trouve dedans | calé |
 | Cadence | part sur 4 s et **s'accélère à chaque rafale** (−0,15 s), jusqu'à un plancher de 0,5 s | mesuré |
 | **Double progression** | une rafale **qui touche** : dégâts +2 (10 → 24, plafond) **et** recharge −0,5 s de plus | mesuré |
 | Ultime | *Salve de tempête* (`TEMPEST VOLLEY`) : jauge pleine toutes les ~9 s, puis décharge **courte et dense** de 1,5 s (2 croissants toutes les 0,3 s) + vitesse ×1,25 | mesuré |
-| Projectile | *Lame d'air* — `windCrescent` ×3, 430 px/s, 3 PV, 1 rebond | mesuré |
+| Projectile | *Lame d'air* — `windCrescent` 16 × 16 ×3,6 (≈ 58 px), 430 px/s, 3 PV, 1 rebond. **Vrai croissant sans contour** (deux cercles décalés), corne sombre côté traînée, ventre crème, liseré clair sur le dos convexe | mesuré |
 | HUD | `Tornado Damage: N` **et** `Cooldown: X.Xs` (deux lignes) | mesuré |
 
 ### Comment la tornade a été établie
@@ -353,14 +355,17 @@ décréments séparés dans la fiche (`cooldownStepOnCast` et `cooldownStep`).
 | --- | --- | --- |
 | Corps | rayon 41 px, `#15c701`, contour noir 5 px | mesuré |
 | Déplacement | 445 px/s, virage 1,7 rad/s | calé |
-| **Arme** | *Liane fouettante* — portée 160 px. **Seule arme courbe du roster** : un arc de 118 px d'ouverture 0,95 rad, épaisseur 19 px, bourgeon au bout, dessiné en tracé et non en sprite | mesuré |
+| **Arme** | *Liane fouettante* — portée 160 px. **Seule arme courbe du roster** : pédoncule brun de 30 px visibles, puis un **crochet** — arc de rayon 46,7 px balayé sur 151°, épaisseur 20 px au plus large | mesuré |
+| Rendu de la liane | pas un tracé lisse : l'arc est **rasterisé en escalier de blocs de 4 px** (contour noir, corps vert, reflet clair côté concave), compilé une fois en sprite puis tourné en plus-proche-voisin — exactement le rendu de la vidéo | mesuré |
 | Corps à corps | 3 PV / 1,15 s, recul 235 ; pile +1 | calé |
 | **Bulbes** | semés toutes les 5 s à l'endroit courant, 4 au plus, durée 18 s, rayon 36 px, **amorçage 0,9 s** (sinon la Plante ramasserait le sien aussitôt posé) | mesuré + calé |
 | **Mine** | l'adversaire qui frôle un bulbe prend la stat en PV et est ralenti de 25 % pendant 1,6 s | mesuré |
 | **Soin** | la Plante qui récupère son bulbe **regagne `stat × 0,6` PV** — le seul élément du roster capable de remonter ses PV | mesuré |
 | Tir des bulbes | un bulbe mûr tire une fleur sur l'adversaire toutes les 2,2 s, portée 460 px | mesuré |
-| Ultime | *Tempête de fleurs* (`FLOWER STORM`), 5 s : la cible est enfermée dans un **cerceau de lianes à nœuds clairs**, clouée sur place (−70 %), battue par une nuée de pétales roses (`stat/4` PV toutes les 0,7 s), pendant que la Plante regagne 1 PV/s | mesuré |
-| Projectile | *Fleur* — `flower` ×3, 340 px/s, 2 PV, traînée rose | mesuré |
+| Ultime | *Tempête de fleurs* (`FLOWER STORM`), 5 s : la cible est clouée sur place (−70 %) et battue par une nuée de pétales (`stat/4` PV toutes les 0,7 s), pendant que la Plante regagne 1 PV/s | mesuré |
+| Aspect de la tempête | **nuée de cubes roses** : des grappes de carrés plats et opaques (`rgb(248,120,184)`), toujours alignés sur les axes, sans contour ni dégradé, denses au point de masquer complètement la cible, mêlées de quelques corolles. **Aucun cerceau de lianes** sur les vidéos | mesuré |
+| Bulbe | cosse verte bombée au **gros contour noir**, pédoncule et deux feuilles sombres au-dessus, deux pattes noires en dessous — `plantBulb` 11 × 15 ×2,5 (≈ 29 × 37 px) | mesuré |
+| Projectile | *Fleur* — `flower` 11 × 11 ×3,6 (≈ 40 px), corolle rose à contour noir épais et **cœur doré**, 340 px/s, 2 PV, traînée rose | mesuré |
 | HUD | `Bulb Damage/Heal: N` (1 → 8 mesuré) | mesuré |
 
 Le libellé du HUD dit tout : la **même** statistique sert de dégâts à
@@ -412,6 +417,7 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Absorption totale         | un coup entièrement absorbé fait clignoter sans coûter de PV |
 | Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège, brûlure) |
 | Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
+| Arme sans manche          | `handle.width: 0` → seul le sprite est tracé (shuriken)    |
 | Rendu hors cadre          | passe `drawUnbounded` pour les effets qui débordent (dôme) |
 
 ## Comment les mesures ont été prises

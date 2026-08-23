@@ -646,8 +646,15 @@ const WIND = {
     reach: 105, // mesuré : ~120 px, arme collée au corps
     spin: SPIN * 1.1, // tourne plus vite que les autres (observé)
     spinDir: 1,
-    handle: { length: 45, width: 9, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
-    head: { sprite: 'windShuriken', scale: 4.6, anchorY: 0.5 },
+    /**
+     * **Aucun manche.** Sur la vidéo le losange est posé à même la boule :
+     * `width: 0` demande au moteur de ne rien dessiner et `length` ne sert
+     * plus qu'à décoller le sprite du centre (34 px → pointe interne cachée
+     * sous le corps, pointe externe à 108 px, soit la portée relevée).
+     */
+    handle: { length: 34, width: 0, color: '#6f6a55', dark: '#3f3b30', outline: '#201c12', gem: null },
+    /** mesuré : 74 px de pointe à pointe → 17 cellules × 4,35 px. */
+    head: { sprite: 'windShuriken', scale: 4.35, anchorY: 0.5 },
     hitbox: { from: 0.45, to: 1, radius: 18 },
     melee: {
       damage: 3,
@@ -690,9 +697,15 @@ const WIND = {
       damage: (self) => Math.max(2, Math.round(self.stacks / 2)),
       damageGain: 2, // mesuré : 10 → 24 par pas de 2
       damageMax: 24, // plafond mesuré, apparié au plancher de 0,5 s
-      color: 'rgba(198,186,150,0.55)',
-      edge: 'rgba(150,138,105,0.7)',
-      blades: 6, // lames de vent qui composent le tourbillon
+      /**
+       * Aspect relevé : un **disque flou couleur sable** composé de larges
+       * pales en éventail qui rayonnent du centre, sans le moindre contour —
+       * pas des cercles concentriques. Le cœur est plus dense et plus chaud.
+       */
+      color: 'rgba(201,190,168,0.46)', // pipette du bord : rgb(201,190,168)
+      edge: 'rgba(178,168,146,0.42)', // le disque garde un bord net sur la vidéo
+      core: 'rgba(168,152,124,0.6)', // pipette du cœur : rgb(168,152,124)
+      blades: 9, // pales de l'éventail (comptées sur la vidéo)
     },
   },
 
@@ -720,7 +733,7 @@ const WIND = {
     crescent: {
       label: 'Lame d’air',
       sprite: 'windCrescent',
-      scale: 3,
+      scale: 3.6, // mesuré : croissants de 43 à 57 px selon l'orientation
       speed: 430,
       damage: 4,
       radius: 12,
@@ -1030,17 +1043,37 @@ const PLANT = {
     reach: 160, // mesuré : ~164 px
     spin: SPIN,
     spinDir: 1,
-    handle: { length: 52, width: 10, color: '#7a5a2a', dark: '#4a3418', outline: '#241a0c', gem: null },
+    /** Pédoncule brun : ~30 px visibles au-delà de la boule (mesuré). */
+    handle: { length: 73, width: 13, color: '#6a513a', dark: '#4b351f', outline: '#0a0a0a', gem: null },
     head: { sprite: null, scale: 1, anchorY: 0.5 },
-    /** Tracé de la liane : arc de cercle, épaisseur et teintes. */
+    /**
+     * Tracé de la liane, **rasterisé en escalier de pixels** par
+     * game/abilities/plant.js : la vidéo ne montre pas une courbe lisse mais
+     * une suite de blocs, exactement comme les autres armes.
+     *
+     * Géométrie obtenue en faisant passer un cercle par trois points relevés
+     * sur la liane de la vidéo (départ, crête, extrémité droite) : centre à
+     * 41 px devant le pédoncule, **rayon 46,7 px**, balayage de 207° à 358°.
+     * La liane monte, passe la crête et redescend en crochet ; sa pointe tombe
+     * pile sur la portée mesurée (160 px), crête 38 px au-dessus de l'axe et
+     * crochet 34 px en dessous — les trois cotes de la vidéo.
+     */
     vine: {
-      length: 118, // longueur développée de la courbe
-      curve: 0.95, // ouverture de l'arc, en radians
-      width: 19,
-      outline: '#0d1f0a',
-      body: '#3aa03a',
-      light: '#7fdc6a',
-      tip: '#a7f08a',
+      radius: 46, // mesuré (ajustement de cercle : 46,7)
+      start: 3.62, // rad (≈207°)
+      sweep: 2.64, // rad (≈151°) : montée + crête + crochet
+      width: 20, // épaisseur du corps au plus large (mesuré ~20 px)
+      /**
+       * Taille d'un « pixel » de l'escalier (mesuré ~4,2 px). Le contour doit
+       * dépasser d'au moins **un bloc et quart**, sinon la quantification
+       * l'avale par endroits et la liane perd son liseré noir.
+       */
+      block: 4,
+      outlineWidth: 5.2,
+      outline: '#050d04',
+      body: '#3fa848', // pipette : rgb(70,161,76)
+      light: '#6ec46a', // pipette : rgb(98,189,115)
+      shine: '#96de84', // pipette : rgb(149,207,118)
     },
     hitbox: { from: 0.42, to: 1, radius: 22 },
     melee: {
@@ -1067,7 +1100,7 @@ const PLANT = {
       max: 4,
       life: 18,
       sprite: 'plantBulb',
-      scale: 3.4,
+      scale: 2.5, // mesuré : cosse de ~29 × 37 px, pattes comprises
       /** Rayon de déclenchement (pour les deux camps). */
       radius: 36,
       /**
@@ -1099,10 +1132,33 @@ const PLANT = {
     chargeOnHit: 3,
     duration: 5,
     storm: {
-      /** Cerceau de lianes qui enferme la cible (observé). */
-      cage: { color: '#1f5c22', stud: '#7bd45a', width: 7, studs: 8, scale: 1.35, spin: 0.9 },
-      /** Nuée de pétales roses en cubes. */
-      petals: { rate: 60, size: 11, speed: 210, life: 1, colors: ['#f9a8d4', '#f472b6', '#ec4899', '#fbcfe8'] },
+      /**
+       * **Nuée de cubes roses opaques.** Relevé sur WIND vs PLANT, confirmé sur
+       * DARK vs PLANT : des carrés plats parfaitement alignés sur les axes,
+       * d'un rose unique (pipette rgb(248,120,184)), sans contour ni dégradé,
+       * assez serrés pour masquer complètement la cible. Longueur des segments :
+       * 9 à 21 px vidéo, soit 11 à 26 px de scène.
+       *
+       * Aucun cerceau de lianes n'apparaît sur ces vidéos : la tempête **est**
+       * la nuée, à laquelle s'ajoutent quelques corolles qui volent avec elle.
+       */
+      petals: { rate: 60, size: 13, speed: 210, life: 1, colors: ['#f87ab8', '#f06aae', '#fb8fc4'] },
+      /**
+       * Amas dessiné par-dessus les particules (rendu pur, sans aléa simulé) :
+       * des **grappes** de cubes, comme sur la vidéo, plus quelques fleurs.
+       */
+      swarm: {
+        clusters: 17, // grappes qui tournent autour de la cible
+        perCluster: 6, // cubes par grappe
+        radius: 2.6, // portée, en rayons de la cible
+        spread: 18, // dispersion d'une grappe, en px
+        size: 17,
+        sizeVar: 0.5,
+        churn: 1.9,
+        color: '#f87ab8',
+        flowers: 4, // corolles emportées par la tempête
+        flowerSize: 42,
+      },
       root: 0.7, // la cible est quasiment clouée sur place
       tickInterval: 0.7,
       tickDamage: (self) => Math.max(1, Math.round(self.stacks / 4)),
@@ -1116,7 +1172,7 @@ const PLANT = {
     flower: {
       label: 'Fleur',
       sprite: 'flower',
-      scale: 3,
+      scale: 3.6, // mesuré : corolle de ~40 px
       speed: 340,
       damage: 2,
       radius: 12,

@@ -15,8 +15,8 @@ GitHub Pages.
 | **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
 | **Lumière** | Marteau d'aube | encaisse pour devenir puissante (bouclier qui convertit) | Piège radiant (trait doré) |
 | **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
-| **Vent** | Shuriken de bourrasque | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
-| **Plante** | Liane fouettante | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs |
+| **Vent** | Shuriken de bourrasque (losange évidé, sans manche) | le plus rapide, rafales tournoyantes autour de lui | Salve de tempête |
+| **Plante** | Liane fouettante (crochet en escalier de pixels) | bulbes qui blessent l'un et **soignent** l'autre | Tempête de fleurs (nuée de cubes roses) |
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
@@ -165,6 +165,9 @@ Toutes les constantes de mise en page proviennent d'un relevé image par image
 | Progression « Chain Damage »  | 1 → 4,5 par pas de 0,5            |
 | Progression « Whirlpool Damage » / « Size » | 1 → 7 / 70 → 100    |
 | Progression « Bulb Damage/Heal » | 1 → 8 (+1 par touche)        |
+| Shuriken du Vent              | losange évidé 74 px, double contour noir, 4 ergots gris, collé au corps |
+| Liane de la Plante            | arc de rayon 46,7 px sur 151°, rasterisé en blocs de 4 px |
+| Tempête de fleurs             | grappes de cubes `rgb(248,120,184)` de 11 à 26 px, aucun cerceau |
 
 Le rythme est calé pour retrouver ces compteurs en fin de duel : sur les
 **36 affrontements possibles** (3 seeds chacun), un duel dure **21 à 79 s**
