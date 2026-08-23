@@ -6,6 +6,7 @@
  *   ?seed=1234        rejoue exactement le même duel
  *   ?lang=fr          libellés du HUD en français (par défaut : ceux de la vidéo)
  *   ?debug=1          hitboxes + compteurs
+ *   ?rec=0            n'enregistre pas le duel (pas d'export, mais zéro coût)
  *
  * @module main
  */
@@ -19,15 +20,17 @@ import { ELEMENTS } from './data/elements.js';
 import { Match } from './game/match.js';
 import { createSelectScreen } from './ui/select.js';
 import { createResultScreen } from './ui/result.js';
-import { createRecorder } from './render/recorder.js';
+import { createRecorder, createNullRecorder } from './render/recorder.js';
 
 const params = new URLSearchParams(location.search);
 const LANG = params.get('lang') === 'fr' ? 'fr' : 'ref';
 const DEBUG = params.get('debug') === '1';
+/** Le film du duel coûte un peu de fil principal : `?rec=0` le coupe net. */
+const RECORD = params.get('rec') !== '0';
 
 const canvas = document.querySelector('#stage');
 const stage = createStage(canvas);
-const recorder = createRecorder(canvas);
+const recorder = RECORD ? createRecorder(canvas) : createNullRecorder();
 
 /** @type {Match|null} */
 let match = null;

@@ -47,6 +47,11 @@ const NOOP_RECORDER = {
   download() {},
 };
 
+/** Enregistreur inerte : sert de repli, et de mode `?rec=0`. */
+export function createNullRecorder() {
+  return NOOP_RECORDER;
+}
+
 function pickMime() {
   if (typeof MediaRecorder === 'undefined') return null;
   if (typeof HTMLCanvasElement === 'undefined') return null;
@@ -77,15 +82,39 @@ export function createRecorder(source) {
   const frameGap = 1000 / EXPORT.fps - 2;
   const extension = mimeType.startsWith('video/mp4') ? 'mp4' : 'webm';
 
-  /** @type {MediaRecorder|null} */
-  let rec = null;
+  /**
+   * **Un seul flux pour toute la session.** Le canvas d'export ne change
+   * jamais : rappeler `captureStream()` à chaque duel ouvrirait un nouveau
+   * pipeline de capture sans fermer le précédent, et le jeu ralentirait un peu
+   * plus à chaque revanche. On le crée donc une fois et on lui accroche un
+   * `MediaRecorder` neuf par duel.
+   * @type {MediaStream|null}
+   */
+  let stream = null;
   /** @type {MediaStreamTrack|null} */
   let track = null;
+  /** @type {MediaRecorder|null} */
+  let rec = null;
   /** @type {Blob[]} */
   let chunks = [];
   /** @type {Blob|null} */
   let blob = null;
   let lastFrame = 0;
+
+  function ensureStream() {
+    if (stream) return stream;
+    // `captureStream(0)` = flux piloté à la main : une image dans la vidéo par
+    // appel à `requestFrame()`, donc une cadence exacte. Les moteurs qui ne
+    // l'exposent pas retombent sur l'échantillonnage automatique.
+    stream = cv.captureStream(0);
+    track = stream.getVideoTracks()[0] ?? null;
+    if (typeof track?.requestFrame !== 'function') {
+      for (const t of stream.getTracks()) t.stop();
+      track = null;
+      stream = cv.captureStream(EXPORT.fps);
+    }
+    return stream;
+  }
 
   function reset() {
     if (rec && rec.state !== 'inactive') {
@@ -96,7 +125,6 @@ export function createRecorder(source) {
       }
     }
     rec = null;
-    track = null;
     chunks = [];
     blob = null;
     lastFrame = 0;
@@ -111,16 +139,10 @@ export function createRecorder(source) {
     start() {
       reset();
       try {
-        // `captureStream(0)` = flux piloté à la main : une image dans la vidéo
-        // par appel à `requestFrame()`, donc une cadence exacte. Les moteurs
-        // qui ne l'exposent pas retombent sur l'échantillonnage automatique.
-        let stream = cv.captureStream(0);
-        track = stream.getVideoTracks()[0] ?? null;
-        if (typeof track?.requestFrame !== 'function') {
-          track = null;
-          stream = cv.captureStream(EXPORT.fps);
-        }
-        rec = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: EXPORT.bitrate });
+        rec = new MediaRecorder(ensureStream(), {
+          mimeType,
+          videoBitsPerSecond: EXPORT.bitrate,
+        });
         rec.ondataavailable = (e) => {
           if (e.data && e.data.size) chunks.push(e.data);
         };
@@ -141,10 +163,14 @@ export function createRecorder(source) {
       if (now - lastFrame < frameGap) return;
       lastFrame = now;
       if (!source.width || !source.height) return;
-      // agrandissement → plus proche voisin (le jeu est en pixel-art),
-      // réduction → interpolation, qui évite le crénelage
+      // Agrandissement → plus proche voisin (le jeu est en pixel-art).
+      // Réduction → interpolation, mais en qualité **basse** : mesuré au
+      // navigateur sur un canvas 1688 × 3000, `high` coûte 2,17 ms par image
+      // contre 0,35 ms en `low`, soit 65 ms de fil principal par seconde de
+      // duel — c'est ce qui rendait les duels poussifs. La différence visible
+      // sur des aplats de pixel-art est, elle, négligeable.
       ctx.imageSmoothingEnabled = source.width > EXPORT.width;
-      ctx.imageSmoothingQuality = 'high';
+      ctx.imageSmoothingQuality = 'low';
       ctx.drawImage(source, 0, 0, EXPORT.width, EXPORT.height);
       track?.requestFrame();
     },

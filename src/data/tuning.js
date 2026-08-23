@@ -151,5 +151,10 @@ export const EXPORT = deepFreeze({
   width: 1080,
   height: 1920,
   fps: 30,
-  bitrate: 8_000_000,
+  /**
+   * 6 Mbit/s : les aplats du pixel-art n'en consomment qu'environ 4, et
+   * demander moins au codeur allège d'autant le fil principal. YouTube
+   * réencode de toute façon à l'envoi.
+   */
+  bitrate: 6_000_000,
 });

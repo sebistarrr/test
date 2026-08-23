@@ -51,6 +51,7 @@ empêche Jekyll d'ignorer les dossiers.
 | `?seed=1234` | rejoue **exactement** le même duel (déterminisme complet)          |
 | `?lang=fr`   | HUD en français (par défaut : libellés anglais de la vidéo)        |
 | `?debug=1`   | hitboxes, vitesses, charge d'ultime, seed                          |
+| `?rec=0`     | n'enregistre pas le duel : pas d'export possible, mais pas un cycle dépensé pour lui |
 
 Exemple : `index.html?a=shadow&b=ice&seed=6&debug=1`
 
