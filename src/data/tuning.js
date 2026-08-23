@@ -109,9 +109,22 @@ export const MATCH = deepFreeze({
   maxHp: 100,
   /** Petit temps mort avant l'engagement, le décor est déjà en place. */
   introDuration: 0.9,
-  /** Ralenti + explosion au K.O. avant l'écran de résultat. */
+  /** Ralenti + explosion au K.O. */
   koDuration: 1.8,
   koSlowmo: 0.25,
+  /**
+   * **Une seconde de gloire** : le perdant a disparu, le vainqueur reste seul
+   * dans l'arène — il grossit d'un ressort, son arme s'emballe et il pousse des
+   * anneaux à sa couleur — avant que l'écran de résultat ne se pose.
+   */
+  victoryDuration: 1,
+  victory: {
+    spin: 2.6, // × la vitesse de rotation d'arme nominale
+    pop: 0.22, // amplitude du ressort d'échelle
+    ringEvery: 0.26, // s entre deux anneaux
+    ringTo: 300, // rayon final d'un anneau
+    sparks: 34, // étincelles par seconde
+  },
   /**
    * Mort subite : au-delà de `after`, tous les dégâts sont amplifiés
    * progressivement. Garantit qu'aucun duel ne s'éternise, y compris entre
@@ -123,4 +136,20 @@ export const MATCH = deepFreeze({
     { x: 0.29, y: 0.5, heading: -0.35 },
     { x: 0.71, y: 0.5, heading: Math.PI + 0.35 },
   ],
+});
+
+/**
+ * Export vidéo du duel qu'on vient de regarder, au **format YouTube Shorts** :
+ * vertical 9:16 en 1080 × 1920, ce que YouTube attend pour un Short. Un duel
+ * dure 20 à 80 s, donc très en dessous des 3 minutes autorisées.
+ *
+ * L'enregistrement se fait pendant la partie, depuis un canvas dédié à cette
+ * définition : le fichier ne dépend donc pas de la taille de la fenêtre ni du
+ * `devicePixelRatio` de la machine.
+ */
+export const EXPORT = deepFreeze({
+  width: 1080,
+  height: 1920,
+  fps: 30,
+  bitrate: 8_000_000,
 });

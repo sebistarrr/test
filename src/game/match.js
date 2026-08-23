@@ -1,12 +1,17 @@
 /**
  * Déroulement d'un duel : machine à états, mise à jour et rendu.
  *
- * Phases : intro → fight → ko → over
+ * Phases : intro → fight → ko → **victory** → over
+ *
+ * `victory` est la seconde de gloire : le perdant a disparu de l'arène, le
+ * vainqueur y reste seul et se met en scène avant que l'écran de résultat ne
+ * se pose (voir `MATCH.victoryDuration`).
  *
  * @module game/match
  */
 
 import { ARENA, MATCH, PHYSICS } from '../data/tuning.js';
+import { TAU, wrapAngle } from '../core/math.js';
 import { assertFrozen } from '../data/freeze.js';
 import { getElement } from '../data/elements.js';
 import { Fighter } from './fighter.js';
@@ -66,9 +71,19 @@ export class Match {
     this.phaseTime = 0;
     this.shakeMag = 0;
     this.shakeTime = 0;
+    /** @type {{x:number,y:number}|null} */
+    this.victoryFrom = null;
+    this.victoryTo = { x: 0, y: 0 };
+    this.victoryRing = 0;
+    this.victorySpark = 0;
     this.stats = { hits: [0, 0], damage: [0, 0], duration: 0 };
     /** @type {Fighter|null} */
     this.winner = null;
+  }
+
+  /** Le sort du duel est scellé : plus aucun dégât ni soin ne compte. */
+  get settled() {
+    return this.phase === 'victory' || this.phase === 'over';
   }
 
   shake(mag, time) {
@@ -95,7 +110,11 @@ export class Match {
         if (this.phaseTime >= MATCH.introDuration) this.setPhase('fight');
         break;
       case 'ko':
-        if (this.phaseTime >= MATCH.koDuration) {
+        if (this.phaseTime >= MATCH.koDuration) this.startVictory();
+        break;
+      case 'victory':
+        this.tickVictory(dtRaw);
+        if (this.phaseTime >= MATCH.victoryDuration) {
           this.setPhase('over');
           this.onEnd?.(this.result());
         }
@@ -104,10 +123,12 @@ export class Match {
         break;
     }
 
-    // combattants
-    for (const f of this.fighters) {
-      if (this.phase === 'ko' && !f.alive) continue;
-      f.step(dt, this.time);
+    // combattants — pendant la parade du vainqueur, plus personne ne se déplace
+    if (this.phase !== 'victory') {
+      for (const f of this.fighters) {
+        if (this.phase === 'ko' && !f.alive) continue;
+        f.step(dt, this.time);
+      }
     }
 
     // corps à corps + collisions
@@ -117,10 +138,12 @@ export class Match {
       this.resolveMelee(this.b, this.a);
     }
 
-    // pouvoirs
-    for (const [f, mod] of this.modules) {
-      if (!f.alive) continue;
-      mod.update(f, dt, this.time, this);
+    // pouvoirs (arrêtés dès le K.O. : la parade doit rester lisible)
+    if (this.phase !== 'victory') {
+      for (const [f, mod] of this.modules) {
+        if (!f.alive) continue;
+        mod.update(f, dt, this.time, this);
+      }
     }
 
     // dégâts sur la durée (brûlure…) : tout passe par damage()
@@ -222,7 +245,7 @@ export class Match {
    * d'ultime, détection du K.O.
    */
   damage(target, amount, source, opts = {}) {
-    if (!target.alive || this.phase === 'over') return;
+    if (!target.alive || this.settled) return;
     if (target.invulnerable > 0 && opts.kind !== 'tether') return;
 
     let amt = Math.max(0, Math.round(amount * this.damageScale()));
@@ -283,7 +306,7 @@ export class Match {
    * départ, et sans effet une fois le duel terminé.
    */
   heal(target, amount, source) {
-    if (!target.alive || this.phase === 'over') return 0;
+    if (!target.alive || this.settled) return 0;
     const before = target.hp;
     target.hp = Math.min(MATCH.maxHp, target.hp + Math.max(0, amount));
     const healed = target.hp - before;
@@ -299,7 +322,7 @@ export class Match {
   }
 
   knockout(loser, winner) {
-    if (this.phase === 'ko' || this.phase === 'over') return;
+    if (this.settled || this.phase === 'ko') return;
     this.winner = winner ?? (loser === this.a ? this.b : this.a);
     this.setPhase('ko');
     this.fx.burst(loser.x, loser.y, 60, {
@@ -310,6 +333,97 @@ export class Match {
     });
     this.fx.ring(loser.x, loser.y, 10, 260, 0.7, loser.el.look.body, 10, true);
     this.shake(12, 0.6);
+  }
+
+  /* ------------------------------------------------------------------ */
+  /* Parade du vainqueur                                                 */
+  /* ------------------------------------------------------------------ */
+
+  /** Le perdant s'efface, le vainqueur reste seul et s'illumine. */
+  startVictory() {
+    this.setPhase('victory');
+    this.victoryRing = 0;
+    this.victorySpark = 0;
+    // l'arène se vide : ni projectiles ni zones ne doivent survivre au duel
+    this.projectiles.list.length = 0;
+    const w = this.winner;
+    if (!w) return;
+    // il glisse vers le centre : bien cadré, il tient tout seul dans l'image
+    // exportée en Short
+    const i = ARENA.inner;
+    this.victoryFrom = { x: w.x, y: w.y };
+    this.victoryTo = { x: (i.left + i.right) / 2, y: (i.top + i.bottom) / 2 };
+    w.impulseX = 0;
+    w.impulseY = 0;
+    // il se présente dans ses propres couleurs : plus de brûlure, plus de givre
+    w.dots.length = 0;
+    w.slows.length = 0;
+    w.tint = null;
+    w.flash = 0;
+    this.fx.ring(w.x, w.y, w.radius, MATCH.victory.ringTo, 0.55, w.el.look.accent, 14, true);
+    this.fx.burst(w.x, w.y, 40, {
+      color: [w.el.look.body, w.el.look.accent, '#ffffff'],
+      speed: 340,
+      size: 6,
+      life: 0.8,
+    });
+    this.shake(5, 0.3);
+  }
+
+  /** Anneaux et étincelles pendant la seconde de gloire. */
+  tickVictory(dt) {
+    const w = this.winner;
+    if (!w) return;
+    const v = MATCH.victory;
+
+    // il rejoint le centre de l'arène, en douceur (ease-out cubique)
+    if (this.victoryFrom) {
+      const t = Math.min(1, this.phaseTime / (MATCH.victoryDuration * 0.7));
+      const k = 1 - (1 - t) ** 3;
+      w.x = this.victoryFrom.x + (this.victoryTo.x - this.victoryFrom.x) * k;
+      w.y = this.victoryFrom.y + (this.victoryTo.y - this.victoryFrom.y) * k;
+    }
+
+    // l'arme s'emballe (le reste du combattant est figé)
+    w.weaponAngle = wrapAngle(w.weaponAngle + w.el.weapon.spin * w.spinDir * v.spin * dt);
+    w.flash = Math.max(0, w.flash - dt);
+
+    this.victoryRing -= dt;
+    if (this.victoryRing <= 0) {
+      this.victoryRing = v.ringEvery;
+      this.fx.ring(w.x, w.y, w.radius * 0.9, v.ringTo, 0.6, w.el.look.accent, 12, true);
+    }
+
+    this.victorySpark += dt * v.sparks;
+    while (this.victorySpark >= 1) {
+      this.victorySpark -= 1;
+      const a = this.viewRng.range(0, TAU);
+      const r = w.radius * this.viewRng.range(0.8, 1.5);
+      this.fx.spawn({
+        kind: 'spark',
+        x: w.x + Math.cos(a) * r,
+        y: w.y + Math.sin(a) * r,
+        vx: this.viewRng.spread(60),
+        vy: -this.viewRng.range(80, 260),
+        life: this.viewRng.range(0.5, 1),
+        size: this.viewRng.range(5, 11),
+        color: this.viewRng.pick([w.el.look.body, w.el.look.accent, '#ffffff']),
+        drag: 1.2,
+      });
+    }
+  }
+
+  /**
+   * Ressort d'échelle : le vainqueur enfle vers sa taille de gloire, avec une
+   * petite oscillation amortie au démarrage — et il **reste** plus grand, pour
+   * que la dernière image du duel soit une vraie pose de vainqueur.
+   */
+  victoryScale() {
+    const t = Math.min(1, this.phaseTime / MATCH.victoryDuration);
+    const pop = MATCH.victory.pop;
+    const grow = 1 - (1 - t) ** 3; // ease-out cubique
+    const wobble = 0.09 * Math.sin(t * 17) * Math.exp(-t * 3.4);
+    return 1 + pop * grow + wobble;
   }
 
   result() {
@@ -347,12 +461,17 @@ export class Match {
     ctx.rect(inner.left, inner.top, inner.right - inner.left, inner.bottom - inner.top);
     ctx.clip();
 
-    for (const [f, mod] of this.modules) mod.drawUnder(ctx, f, this, this.time);
+    // pendant la parade, l'arène est nettoyée : plus une zone, plus un pouvoir
+    if (this.phase !== 'victory') {
+      for (const [f, mod] of this.modules) mod.drawUnder(ctx, f, this, this.time);
+    }
     ctx.restore();
 
     // passe **hors arène** : certains effets débordent volontairement du cadre
     // (le dôme du Lien d'essence recouvre jusqu'au HUD dans la vidéo)
-    for (const [f, mod] of this.modules) mod.drawUnbounded?.(ctx, f, this, this.time);
+    if (this.phase !== 'victory') {
+      for (const [f, mod] of this.modules) mod.drawUnbounded?.(ctx, f, this, this.time);
+    }
 
     ctx.save();
     ctx.beginPath();
@@ -360,10 +479,17 @@ export class Match {
     ctx.clip();
     this.fx.draw(ctx, true);
     this.projectiles.draw(ctx);
+    // dès la parade, le perdant a quitté l'arène
+    const showDead = this.phase === 'fight' || this.phase === 'ko';
+    if (this.phase === 'victory') this.drawVictoryGlow(ctx);
     for (const f of this.fighters) {
-      if (f.alive || this.phase !== 'over') f.draw(ctx, this.time);
+      if (!f.alive && !showDead) continue;
+      if (f === this.winner && this.phase === 'victory') this.drawWinner(ctx);
+      else f.draw(ctx, this.time);
     }
-    for (const [f, mod] of this.modules) mod.drawOver(ctx, f, this, this.time);
+    if (this.phase !== 'victory') {
+      for (const [f, mod] of this.modules) mod.drawOver(ctx, f, this, this.time);
+    }
     if (this.debug) {
       for (const f of this.fighters) f.drawDebug(ctx);
       this.projectiles.drawDebug(ctx);
@@ -380,6 +506,36 @@ export class Match {
 
     if (this.phase === 'intro') this.drawIntro(ctx);
     if (this.debug) this.drawDebugOverlay(ctx);
+  }
+
+  /** Nappe de lumière à la couleur du vainqueur, sous lui. */
+  drawVictoryGlow(ctx) {
+    const w = this.winner;
+    if (!w) return;
+    const t = Math.min(1, this.phaseTime / MATCH.victoryDuration);
+    const r = w.radius * (2.4 + 1.6 * t);
+    const g = ctx.createRadialGradient(w.x, w.y, w.radius * 0.5, w.x, w.y, r);
+    g.addColorStop(0, w.el.look.aura.color);
+    g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save();
+    ctx.globalAlpha = 0.9 * (1 - t * 0.35);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(w.x, w.y, r, 0, TAU);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  /** Le vainqueur, agrandi par le ressort de la parade. */
+  drawWinner(ctx) {
+    const w = this.winner;
+    const s = this.victoryScale();
+    ctx.save();
+    ctx.translate(w.x, w.y);
+    ctx.scale(s, s);
+    ctx.translate(-w.x, -w.y);
+    w.draw(ctx, this.time);
+    ctx.restore();
   }
 
   drawIntro(ctx) {

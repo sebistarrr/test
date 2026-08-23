@@ -434,6 +434,8 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Arme sans manche          | `handle.width: 0` → seul le sprite est tracé (shuriken, lame ardente) |
 | Bouclier                  | `look.shield` : liseré et halo aux couleurs de l'élément    |
 | Rendu hors cadre          | passe `drawUnbounded` pour les effets qui débordent (dôme) |
+| Parade du vainqueur       | phase `victory` : 1 s, arène vidée, le vainqueur au centre |
+| Export vidéo              | `render/recorder.js` : canvas 1080 × 1920 + MediaRecorder  |
 
 ## Comment les mesures ont été prises
 

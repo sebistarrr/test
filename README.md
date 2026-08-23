@@ -20,7 +20,7 @@ GitHub Pages.
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png), [l'écran de sélection](docs/capture-selection.png) et [l'écran de fin avec l'export Short](docs/capture-fin.png).</sup>
 
 ---
 
@@ -54,6 +54,21 @@ empêche Jekyll d'ignorer les dossiers.
 
 Exemple : `index.html?a=shadow&b=ice&seed=6&debug=1`
 
+### À la fin d'un duel
+
+| Action | Effet |
+| --- | --- |
+| **Revanche** | même affiche, **nouveau** tirage |
+| **Revoir ce duel** | même affiche **et** même seed : la simulation étant déterministe, le duel se rejoue coup pour coup — vérifié automatiquement (mêmes touches, mêmes dégâts, même durée à la milliseconde) |
+| **Exporter en Short** | télécharge la vidéo du duel qu'on vient de regarder, en **vertical 1080 × 1920**, prête à publier en YouTube Short |
+
+La seed du duel est affichée sous le vainqueur : elle suffit à le refaire jouer
+plus tard avec `?seed=`.
+
+Le duel se termine par **une seconde de parade** : le perdant quitte l'arène, le
+vainqueur glisse au centre, grandit, son arme s'emballe et il pousse des anneaux
+à sa couleur. C'est aussi la dernière image de la vidéo exportée.
+
 ---
 
 ## Architecture
@@ -83,6 +98,7 @@ src/
 │   ├── sprites.js         banque de sprites + overrides PNG
 │   ├── pixelart.js        compilation pixel-map → canvas
 │   ├── hud.js             jauges d'ultime + ligne de stat
+│   ├── recorder.js        film du duel → vidéo verticale 1080x1920 (Shorts)
 │   ├── effects.js         particules (étincelles, neige, fantômes, ondes)
 │   └── text.js            texte ajusté pour ne jamais déborder du HUD
 ├── game/

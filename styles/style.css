@@ -309,6 +309,17 @@ body {
 .result-detail { margin: 0; font-size: 2.8cqw; color: #444; }
 .result-actions { display: flex; flex-direction: column; gap: 1.6cqw; align-items: center; }
 
+/* export vidéo : bouton accentué + ligne d'état sous le bouton */
+.export-btn { background: #d7f5e2; }
+.export-btn[disabled] { opacity: .5; cursor: progress; }
+.result-note {
+  margin: -0.6cqw 0 0;
+  font-size: 2.2cqw;
+  color: #6b6b6b;
+  letter-spacing: .02em;
+  max-width: 60cqw;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .slot, .card, .start-btn { transition: none; }
 }
