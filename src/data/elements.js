@@ -385,7 +385,12 @@ const FIRE = {
           damage: (self) => Math.max(1, Math.round(self.stacks / 2.4)),
           interval: 1,
           duration: (self) => self.stacks, // la stat sert aussi de durée
-          ring: '#f97316', // cerclage orange sur la victime (observé)
+          /**
+           * La brûlure **colore la victime en orange** : au zoom, la boule
+           * jaune de la Foudre vire franchement à l'orange pendant toute la
+           * durée. Ce n'est pas un cerclage.
+           */
+          tint: { color: '#f97316', alpha: 0.72 },
         },
       },
     },
@@ -409,8 +414,9 @@ const FIRE = {
     barLabelFr: 'RAGE INFERNALE',
     barFill: '#dc2626',
     barText: '#fff1f0',
-    chargeRate: 4.4,
-    chargeOnHit: 3,
+    /** Cycle de jauge mesuré : la Rage revient toutes les 25 à 27 s. */
+    chargeRate: 3.8,
+    chargeOnHit: 1,
     duration: 6,
     /** Nova de cubes orange à l'incantation (observée image par image). */
     nova: { count: 90, speed: 460, size: 13, life: 1.1, colors: ['#f97316', '#ea580c', '#fbbf24', '#dc2626'] },
@@ -432,7 +438,7 @@ const FIRE = {
       life: 1.3,
       bounces: 0,
       knockback: 90,
-      onHit: { dot: { damage: 1, interval: 1, duration: 2, ring: '#f97316' } },
+      onHit: { dot: { damage: 1, interval: 1, duration: 2, tint: { color: '#f97316', alpha: 0.72 } } },
       trail: { color: 'rgba(249,115,22,0.45)', every: 0.03, life: 0.3 },
     },
   },
@@ -716,7 +722,7 @@ const WIND = {
       sprite: 'windCrescent',
       scale: 3,
       speed: 430,
-      damage: 3,
+      damage: 4,
       radius: 12,
       life: 2.2,
       bounces: 1,

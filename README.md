@@ -11,7 +11,7 @@ GitHub Pages.
 | --- | --- | --- | --- |
 | **Ombre** | Lame du Néant | pas d'ombre + volée de traits | Lien d'essence (dôme débordant + drain) |
 | **Glace** | Hache de givre | piles de dégâts/ralentissement | Blizzard (champ + neige) |
-| **Feu** | Lame ardente | brûlure qui s'aggrave | Rage infernale (nova + ailes) |
+| **Feu** | Lame ardente | brûlure qui colore et s'aggrave | Rage infernale (nova + ailes) |
 | **Eau** | Trident des marées | tourbillons qui grandissent | Maelström |
 | **Lumière** | Marteau d'aube | encaisse pour devenir puissante (bouclier qui convertit) | Piège radiant (trait doré) |
 | **Foudre** | Lame fulgurante | bornes statiques + arcs en chaîne | Surcharge |
@@ -20,7 +20,7 @@ GitHub Pages.
 
 ![Lumière contre Feu](docs/capture-duel.png)
 
-<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
+<sup>Lumière (marteau, bouclier, piège radiant) contre Feu (brûlure, rage infernale). Voir aussi [les zones](docs/capture-zones.png), [la Plante](docs/capture-plante.png), [la Lumière qui encaisse](docs/capture-lumiere.png), [la rafale du Vent](docs/capture-vent.png), [le dôme de l'Ombre](docs/capture-ombre.png), [la brûlure du Feu](docs/capture-feu.png) et [l'écran de sélection](docs/capture-selection.png).</sup>
 
 ---
 

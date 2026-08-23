@@ -115,7 +115,7 @@ export class Fighter {
    * Un seul DoT par source : une nouvelle application remplace la précédente,
    * comme la brûlure du Feu qui se « rafraîchit » à chaque coup.
    */
-  applyDot({ damage, interval, duration, source, ring = null }, now) {
+  applyDot({ damage, interval, duration, source, ring = null, tint = null }, now) {
     const existing = this.dots.find((d) => d.source === source);
     const dot = {
       damage,
@@ -124,6 +124,7 @@ export class Fighter {
       until: now + duration,
       source,
       ring,
+      tint,
     };
     if (existing) Object.assign(existing, dot);
     else this.dots.push(dot);
@@ -144,6 +145,17 @@ export class Fighter {
   /** Couleur d'anneau d'état à dessiner autour du corps, s'il y en a une. */
   statusRing(now) {
     for (const d of this.dots) if (d.until > now && d.ring) return d.ring;
+    return null;
+  }
+
+  /**
+   * Teinte de corps imposée par un dégât sur la durée.
+   * La brûlure du Feu **colore entièrement sa victime en orange** : au zoom,
+   * la boule jaune de la Foudre devient franchement orange, ce n'est pas un
+   * simple cerclage.
+   */
+  statusTint(now) {
+    for (const d of this.dots) if (d.until > now && d.tint) return d.tint;
     return null;
   }
 
@@ -261,9 +273,10 @@ export class Fighter {
     ctx.arc(this.x, this.y, this.radius, 0, TAU);
     ctx.fillStyle = this.flash > 0 ? look.bodyHit : look.body;
     ctx.fill();
-    if (this.flash <= 0 && this.tint) {
-      ctx.globalAlpha = this.tintAlpha;
-      ctx.fillStyle = this.tint;
+    const dotTint = this.statusTint(now);
+    if (this.flash <= 0 && (this.tint || dotTint)) {
+      ctx.globalAlpha = this.tint ? this.tintAlpha : dotTint.alpha;
+      ctx.fillStyle = this.tint ?? dotTint.color;
       ctx.fill();
       ctx.globalAlpha = 1;
     }

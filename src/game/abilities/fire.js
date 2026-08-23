@@ -126,7 +126,7 @@ export const fireAbilities = {
           interval: 1,
           duration: f.stacks,
           source: f,
-          ring: '#f97316',
+          tint: { color: '#f97316', alpha: 0.72 },
         },
         now,
       );

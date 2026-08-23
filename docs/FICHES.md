@@ -20,7 +20,9 @@ fiche gelée correspondante.
   | `WIND vs LIGHT` | Vent | 576 × 1024, 68,7 s |
   | `WIND vs LIGHTNING` | Vent | 576 × 1024, 46,9 s |
   | `WIND vs WATER` | Vent | 576 × 1024, 63,1 s |
-  | `PLANT vs FIRE` | Plante | 576 × 1024, 62,2 s |
+  | `PLANT vs FIRE` | Plante, Feu | 576 × 1024, 62,2 s |
+  | `FIRE vs LIGHTNING` | Feu | 576 × 1024, 40,3 s |
+  | `FIRE vs LIGHT` (long) | Feu | 576 × 1024, 68,5 s |
   | `ICE vs PLANT` | Plante | 576 × 1024, 93,7 s |
   | `DARK vs PLANT` | Plante, Ombre | 576 × 1024, 99,0 s |
   | `DARK vs LIGHTNING` | Ombre | 576 × 1024, 48,1 s |
@@ -207,11 +209,13 @@ début et létale à la fin.
 | Arme | *Lame ardente* — portée 150 px, manche sombre 78 px + sprite `fireBlade` ×4 (72 × 40 px) | mesuré |
 | Corps à corps | 5 PV / 1,15 s, recul 240 | calé |
 | **Effet à la touche** | **brûlure** : la pile monte de 0,5 (1 → 5,5 mesuré) ; le DoT inflige `pile/2,4` PV par seconde pendant `pile` secondes | mesuré |
-| Marquage visuel | **anneau orange** autour de la victime pendant la brûlure | mesuré |
+| **Marquage visuel** | la brûlure **colore entièrement la victime en orange** — au zoom, la boule jaune de la Foudre vire franchement à l'orange ; ce n'est pas un cerclage | mesuré |
 | Pouvoir | *Gerbe de braises* — 3 braises, dispersion ±0,55 rad, toutes les 3,6 s | calé |
+| Cycle de l'ultime | jauge pleine toutes les **25 à 27 s** (mesuré sur la jauge) | mesuré |
 | Ultime | *Rage infernale* (`INFERNAL RAGE`), 6 s : nova de **90 cubes orange**, ailes de flammes battantes, aura brûlante de 150 px (2 PV / 0,6 s + brûlure), vitesse ×1,2 | mesuré |
 | Projectile | *Braise* — `ember` ×3, 520 px/s, 4 PV, embrase 2 s | calé |
-| HUD | `Burn Damage/Duration: N` | mesuré |
+| Jauge | +3,8 %/s, +1 % par touche portée — calé sur le cycle de 26 s | calé |
+| HUD | `Burn Damage/Duration: N` — progression relevée sur 68 s : 1 → 1,5 → 2,5 → 3 → 3,5 → 4 → 4,5 → 5,5 → 6 → 6,5 → 7, par pas de 0,5 | mesuré |
 
 La statistique fait **à la fois** les dégâts et la durée du DoT — c'est
 littéralement ce qu'annonce son libellé dans la vidéo.
@@ -380,8 +384,8 @@ Vérifié par simulation sans rendu sur les **36 affrontements** possibles
   soient les deux éléments choisis — aucun des 36 affrontements n'atteint la
   limite de simulation ;
 - répartition des victoires sur les 21 duels hors miroir de chaque élément :
-  Lumière 14, Ombre 11, Foudre 11, Plante 11, Eau 11, Glace 10, Feu 9, Vent 7 —
-  l'écart le plus resserré depuis le début du projet.
+  Ombre 12, Lumière 12, Glace 11, Feu 11, Foudre 10, Vent 10, Plante 9, Eau 9 —
+  les huit éléments tiennent désormais dans trois points d'écart.
   Le classement bouge à chaque retouche : le banc d'essai (`matrix`) sert
   justement à le vérifier après chaque changement de fiche.
 
@@ -406,7 +410,7 @@ Le banc d'essai est reproductible : chaque duel se rejoue à l'identique avec
 | Absorption                | le module de la cible peut absorber avant les PV (bouclier) |
 | Soin                      | `Match.heal()`, plafonné aux 100 PV de départ              |
 | Absorption totale         | un coup entièrement absorbé fait clignoter sans coûter de PV |
-| Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège)          |
+| Teinte d'état             | `onHit.tint` avec alpha de mélange (givre, piège, brûlure) |
 | Rendu d'arme              | un module peut fournir son propre `drawWeapon` (liane)     |
 | Rendu hors cadre          | passe `drawUnbounded` pour les effets qui débordent (dôme) |
 

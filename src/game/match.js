@@ -206,6 +206,7 @@ export class Match {
               typeof onHit.dot.duration === 'function' ? onHit.dot.duration(attacker) : onHit.dot.duration,
             source: attacker,
             ring: onHit.dot.ring ?? null,
+            tint: onHit.dot.tint ?? null,
           },
           this.time,
         );
