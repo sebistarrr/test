@@ -89,6 +89,8 @@ export class Fighter {
     this.customWeapon = null;
     /** Suivi de l'incantation d'ultime, pour la mise en scène (rendu seul). */
     this.wasUlting = false;
+    /** Mur touché à ce pas, pour la mise en scène (rendu seul). */
+    this.wall = null;
   }
 
   get radius() {
@@ -206,10 +208,13 @@ export class Fighter {
     const r = this.radius;
     const i = ARENA.inner;
     let bounced = false;
-    if (this.x - r < i.left) { this.x = i.left + r; this.heading = wrapAngle(Math.PI - this.heading); this.impulseX = Math.abs(this.impulseX); bounced = true; }
-    if (this.x + r > i.right) { this.x = i.right - r; this.heading = wrapAngle(Math.PI - this.heading); this.impulseX = -Math.abs(this.impulseX); bounced = true; }
-    if (this.y - r < i.top) { this.y = i.top + r; this.heading = wrapAngle(-this.heading); this.impulseY = Math.abs(this.impulseY); bounced = true; }
-    if (this.y + r > i.bottom) { this.y = i.bottom - r; this.heading = wrapAngle(-this.heading); this.impulseY = -Math.abs(this.impulseY); bounced = true; }
+    // `wall` note le mur touché **pour la mise en scène seulement** : simple
+    // marquage, aucun effet sur la trajectoire.
+    this.wall = null;
+    if (this.x - r < i.left) { this.x = i.left + r; this.heading = wrapAngle(Math.PI - this.heading); this.impulseX = Math.abs(this.impulseX); bounced = true; this.wall = 'left'; }
+    if (this.x + r > i.right) { this.x = i.right - r; this.heading = wrapAngle(Math.PI - this.heading); this.impulseX = -Math.abs(this.impulseX); bounced = true; this.wall = 'right'; }
+    if (this.y - r < i.top) { this.y = i.top + r; this.heading = wrapAngle(-this.heading); this.impulseY = Math.abs(this.impulseY); bounced = true; this.wall = 'top'; }
+    if (this.y + r > i.bottom) { this.y = i.bottom - r; this.heading = wrapAngle(-this.heading); this.impulseY = -Math.abs(this.impulseY); bounced = true; this.wall = 'bottom'; }
     if (bounced && PHYSICS.spinFlipsOnBounce) this.spinDir *= -1;
 
     // --- rotation de l'arme (ralentie comme le déplacement)

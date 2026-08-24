@@ -477,11 +477,15 @@ export class Match {
     ctx.rect(inner.left, inner.top, inner.right - inner.left, inner.bottom - inner.top);
     ctx.clip();
 
+    // tout au fond : la nappe de sol et les ondes de mur, qui ne passent
+    // jamais devant les combattants
+    this.flair.drawFloor(ctx, this.fighters);
+    this.flair.drawWalls(ctx);
+
     // pendant la parade, l'arène est nettoyée : plus une zone, plus un pouvoir
     if (this.phase !== 'victory') {
       for (const [f, mod] of this.modules) mod.drawUnder(ctx, f, this, this.time);
     }
-    this.flair.drawUnder(ctx, this.fighters);
     ctx.restore();
 
     // passe **hors arène** : certains effets débordent volontairement du cadre
@@ -494,6 +498,8 @@ export class Match {
     ctx.beginPath();
     ctx.rect(inner.left, inner.top, inner.right - inner.left, inner.bottom - inner.top);
     ctx.clip();
+    this.flair.drawWake(ctx, this.fighters, this.time);
+    this.flair.drawUnder(ctx, this.fighters);
     this.fx.draw(ctx, true);
     this.projectiles.draw(ctx);
     // dès la parade, le perdant a quitté l'arène

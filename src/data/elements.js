@@ -54,12 +54,17 @@ const SHADOW = {
     },
     /**
      * Mise en scène (rendu seul, aucun effet sur le duel) : `ribbon` = traînée
-     * de la pointe d'arme, `motes` = poussière d'ambiance, `impact` = gerbe à
-     * la touche, `shape` = forme des particules.
+     * de la pointe d'arme, `motes` = frémissement **collé au corps** (il
+     * souligne la silhouette, il ne l'enveloppe pas), `impact` = gerbe à la
+     * touche, `shape` = forme des particules.
+     *
+     * Le remplissage du cadre, lui, ne passe plus par des particules qui
+     * flottent devant l'action : c'est la nappe de sol sous chaque combattant
+     * et les ondes le long des murs qui s'en chargent (`render/flair.js`).
      */
     flair: {
       ribbon: { color: '#a855f7', width: 16, alpha: 0.5 },
-      motes: { rate: 20, size: 9, drift: 26, rise: -14, colors: ['#7c3aed', '#a855f7', '#2e1065'] },
+      motes: { rate: 9, size: 9, drift: 26, rise: -14, colors: ['#7c3aed', '#a855f7', '#2e1065'] },
       impact: ['#a855f7', '#c4b5fd', '#ffffff'],
       shape: 'dot',
       castFlash: 'rgba(124,58,237,0.55)',
@@ -220,7 +225,7 @@ const ICE = {
     },
     flair: {
       ribbon: { color: '#67e8f9', width: 17, alpha: 0.5 },
-      motes: { rate: 20, size: 9, drift: 20, rise: 14, colors: ['#22d3ee', '#0891b2', '#67e8f9'] },
+      motes: { rate: 9, size: 9, drift: 20, rise: 14, colors: ['#22d3ee', '#0891b2', '#67e8f9'] },
       impact: ['#a5f3fc', '#ffffff', '#0891b2'],
       shape: 'spark',
       castFlash: 'rgba(165,243,252,0.6)',
@@ -372,7 +377,7 @@ const FIRE = {
     },
     flair: {
       ribbon: { color: '#f97316', width: 18, alpha: 0.6 },
-      motes: { rate: 28, size: 10, drift: 30, rise: -70, colors: ['#f97316', '#ea580c', '#dc2626'] },
+      motes: { rate: 13, size: 10, drift: 30, rise: -70, colors: ['#f97316', '#ea580c', '#dc2626'] },
       impact: ['#fbbf24', '#f97316', '#ffffff'],
       shape: 'spark',
       castFlash: 'rgba(249,115,22,0.6)',
@@ -529,7 +534,7 @@ const LIGHT = {
     shield: { color: 'rgba(253,224,71,0.6)', glow: 'rgba(250,204,21,0.12)' },
     flair: {
       ribbon: { color: '#fde047', width: 19, alpha: 0.6 },
-      motes: { rate: 22, size: 9, drift: 22, rise: -20, colors: ['#eab308', '#facc15', '#ca8a04'] },
+      motes: { rate: 10, size: 9, drift: 22, rise: -20, colors: ['#eab308', '#facc15', '#ca8a04'] },
       impact: ['#fef9c3', '#fde047', '#ffffff'],
       shape: 'streak',
       castFlash: 'rgba(253,224,71,0.7)',
@@ -698,7 +703,7 @@ const WIND = {
     },
     flair: {
       ribbon: { color: '#d6cdaa', width: 20, alpha: 0.5 },
-      motes: { rate: 24, size: 9, drift: 46, rise: -6, colors: ['#b9a878', '#8a7f5c', '#d6cdaa'] },
+      motes: { rate: 11, size: 9, drift: 46, rise: -6, colors: ['#b9a878', '#8a7f5c', '#d6cdaa'] },
       impact: ['#e8dcc0', '#ffffff', '#a89b6f'],
       shape: 'streak',
       castFlash: 'rgba(232,220,192,0.6)',
@@ -862,7 +867,7 @@ const LIGHTNING = {
     },
     flair: {
       ribbon: { color: '#7dd3fc', width: 16, alpha: 0.65 },
-      motes: { rate: 26, size: 8, drift: 40, rise: -10, colors: ['#38bdf8', '#0284c7', '#f5e60a'] },
+      motes: { rate: 12, size: 8, drift: 40, rise: -10, colors: ['#38bdf8', '#0284c7', '#f5e60a'] },
       impact: ['#67e8f9', '#f5e60a', '#ffffff'],
       shape: 'streak',
       castFlash: 'rgba(103,232,249,0.65)',
@@ -985,7 +990,7 @@ const WATER = {
     },
     flair: {
       ribbon: { color: '#60a5fa', width: 18, alpha: 0.55 },
-      motes: { rate: 20, size: 9, drift: 24, rise: 22, colors: ['#2563eb', '#60a5fa', '#1d4ed8'] },
+      motes: { rate: 9, size: 9, drift: 24, rise: 22, colors: ['#2563eb', '#60a5fa', '#1d4ed8'] },
       impact: ['#93c5fd', '#ffffff', '#1d4ed8'],
       shape: 'dot',
       castFlash: 'rgba(96,165,250,0.6)',
@@ -1126,7 +1131,7 @@ const PLANT = {
     },
     flair: {
       ribbon: { color: '#4ade80', width: 19, alpha: 0.55 },
-      motes: { rate: 21, size: 10, drift: 26, rise: -18, colors: ['#16a34a', '#4ade80', '#ec4899'] },
+      motes: { rate: 9, size: 10, drift: 26, rise: -18, colors: ['#16a34a', '#4ade80', '#ec4899'] },
       impact: ['#4ade80', '#bbf7d0', '#f472b6'],
       shape: 'dot',
       castFlash: 'rgba(74,222,128,0.6)',

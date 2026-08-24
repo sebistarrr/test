@@ -2,9 +2,15 @@
  * Couche de **mise en scène** : tout ce qui rend le duel spectaculaire sans
  * rien changer à ce qui se passe.
  *
- * Ruban d'arme, poussière d'ambiance, nombres de dégâts qui montent, éclat
- * d'incantation, état critique : aucun de ces effets ne touche aux PV, aux
- * positions ni aux minuteurs. C'est ce qui autorise sa règle de fonctionnement
+ * Ruban d'arme, nappe de sol, ondes de mur, sillage de vitesse, nombres de
+ * dégâts qui montent, éclat d'incantation, état critique : aucun de ces effets
+ * ne touche aux PV, aux positions ni aux minuteurs.
+ *
+ * Règle de composition : **rien ne se pose entre le spectateur et les
+ * combattants**. Ce qui remplit le cadre est soit au fond (nappe de sol), soit
+ * sur les bords (ondes de mur), soit accroché au combattant et derrière lui
+ * (ruban, sillage). Une nuée qui flotte au milieu de l'arène a été essayée puis
+ * retirée : elle brouillait la lecture du duel. C'est ce qui autorise sa règle de fonctionnement
  * la plus importante :
  *
  * > **La mise en scène a son propre aléa** (`viewRng`), jamais celui de la
@@ -44,7 +50,8 @@ export class Flair {
     this.flashMax = 1;
     this.flashColor = 'rgba(255,255,255,0.55)';
     this.moteDebt = new Map();
-    this.ambientDebt = 0;
+    /** @type {Array<any>} ondes le long des murs de l'arène */
+    this.ripples = [];
   }
 
   attach(fighters) {
@@ -158,7 +165,7 @@ export class Flair {
       this._trackRibbon(f);
       if (live) this._emitMotes(f, dt);
     }
-    if (live) this._ambient(dt, fighters);
+    if (live) this._walls(dt, fighters);
 
     const inner = ARENA.inner;
     for (const m of this.motes) {
@@ -186,32 +193,115 @@ export class Flair {
   }
 
   /**
-   * Poussière d'arène : une dérive lente aux couleurs des deux combattants sur
-   * toute la surface. C'est ce qui empêche le cadre d'être vide entre deux
-   * échanges — volontairement petite et diluée pour ne jamais brouiller la
-   * lecture du duel.
+   * **Ondes de mur.** À chaque rebond, une onde court le long du mur touché,
+   * à la couleur du combattant. C'est le remplaçant de la poussière d'arène :
+   * ça remplit le cadre au rythme du duel, mais **sur les bords** — jamais
+   * entre le spectateur et les combattants.
    */
-  _ambient(dt, fighters) {
-    this.ambientDebt = (this.ambientDebt ?? 0) + dt * 7;
-    while (this.ambientDebt >= 1) {
-      this.ambientDebt -= 1;
-      const f = fighters[this.rng.next() < 0.5 ? 0 : 1];
-      const spec = f?.el?.look?.flair?.motes;
-      if (!spec) continue;
-      const i = ARENA.inner;
-      this._mote({
-        x: this.rng.range(i.left, i.right),
-        y: this.rng.range(i.top, i.bottom),
-        vx: this.rng.spread(16),
-        vy: -this.rng.range(4, 22),
-        life: this.rng.range(1.6, 3),
-        size: this.rng.range(3, 6),
-        color: this.rng.pick(spec.colors),
-        shape: 'dust',
-        drag: 0.25,
-        spin: this.rng.spread(4),
+  _walls(dt, fighters) {
+    for (const f of fighters) {
+      if (!f.alive || !f.wall) continue;
+      this.ripples.push({
+        side: f.wall,
+        at: f.wall === 'left' || f.wall === 'right' ? f.y : f.x,
+        life: 0.55,
+        maxLife: 0.55,
+        color: f.el.look.accent,
       });
+      if (this.ripples.length > 14) this.ripples.shift();
     }
+    for (let i = this.ripples.length - 1; i >= 0; i--) {
+      this.ripples[i].life -= dt;
+      if (this.ripples[i].life <= 0) this.ripples.splice(i, 1);
+    }
+  }
+
+  /**
+   * Ondes de mur : un trait qui s'étale le long du bord touché, puis s'efface.
+   * Dessiné **sous** tout le reste.
+   */
+  drawWalls(ctx) {
+    const i = ARENA.inner;
+    ctx.save();
+    ctx.lineCap = 'round';
+    for (const r of this.ripples) {
+      const t = r.life / r.maxLife;
+      const spread = 40 + 210 * (1 - t);
+      ctx.globalAlpha = t * t * 0.75;
+      ctx.strokeStyle = r.color;
+      ctx.lineWidth = 3 + 9 * t;
+      ctx.beginPath();
+      if (r.side === 'left' || r.side === 'right') {
+        const x = r.side === 'left' ? i.left + 3 : i.right - 3;
+        ctx.moveTo(x, Math.max(i.top, r.at - spread));
+        ctx.lineTo(x, Math.min(i.bottom, r.at + spread));
+      } else {
+        const y = r.side === 'top' ? i.top + 3 : i.bottom - 3;
+        ctx.moveTo(Math.max(i.left, r.at - spread), y);
+        ctx.lineTo(Math.min(i.right, r.at + spread), y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Nappe de sol.** Une teinte diffuse sous chaque combattant, dessinée tout
+   * au fond : l'arène cesse d'être un vide blanc sans qu'aucun pixel ne vienne
+   * se poser devant l'action.
+   */
+  drawFloor(ctx, fighters) {
+    ctx.save();
+    for (const f of fighters) {
+      if (!f.alive) continue;
+      const r = f.radius * 3.6;
+      const g = ctx.createRadialGradient(f.x, f.y, f.radius * 0.4, f.x, f.y, r);
+      g.addColorStop(0, f.el.look.aura.color);
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, r, 0, TAU);
+      ctx.fill();
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+  }
+
+  /**
+   * **Sillage de vitesse.** Quelques traits derrière la boule quand elle file :
+   * ils sont *derrière* elle, donc ils soulignent la lecture au lieu de la
+   * gêner, et ils disent d'où elle vient.
+   */
+  drawWake(ctx, fighters, now) {
+    ctx.save();
+    for (const f of fighters) {
+      if (!f.alive) continue;
+      // le sillage n'apparaît qu'à vitesse **anormale** : projeté par un coup,
+      // ou lancé par un bonus. En croisière, rien — sinon c'est du bruit.
+      const speed = Math.hypot(f.impulseX, f.impulseY) + f.currentSpeed(now);
+      const boost = Math.min(1, (speed - 520) / 380);
+      if (boost <= 0.06) continue;
+      const back = f.heading + Math.PI;
+      ctx.strokeStyle = f.el.look.accent;
+      ctx.lineCap = 'round';
+      for (let k = 0; k < 3; k++) {
+        const off = (k - 1) * f.radius * 0.55;
+        const wob = Math.sin(now * 22 + k * 2) * 3;
+        const len = f.radius * (1.1 + 1.9 * boost) * (1 - Math.abs(k - 1) * 0.28);
+        const nx = Math.cos(back + Math.PI / 2) * (off + wob);
+        const ny = Math.sin(back + Math.PI / 2) * (off + wob);
+        ctx.globalAlpha = 0.45 * boost;
+        ctx.lineWidth = 6 - Math.abs(k - 1) * 2;
+        ctx.beginPath();
+        ctx.moveTo(f.x + nx + Math.cos(back) * f.radius * 0.8, f.y + ny + Math.sin(back) * f.radius * 0.8);
+        ctx.lineTo(f.x + nx + Math.cos(back) * (f.radius * 0.8 + len), f.y + ny + Math.sin(back) * (f.radius * 0.8 + len));
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
   }
 
   /** Mémorise la pointe de l'arme pour en faire un ruban. */
@@ -257,13 +347,13 @@ export class Flair {
     while (debt >= 1) {
       debt -= 1;
       const a = this.rng.range(0, TAU);
-      const rad = f.radius * this.rng.range(0.6, 1.25);
+      const rad = f.radius * this.rng.range(0.75, 1.05);
       this._mote({
         x: f.x + Math.cos(a) * rad,
         y: f.y + Math.sin(a) * rad,
         vx: this.rng.spread(spec.drift) - f.impulseX * 0.04,
         vy: this.rng.spread(spec.drift) + (spec.rise ?? 0),
-        life: this.rng.range(0.4, 1.1),
+        life: this.rng.range(0.22, 0.5),
         size: this.rng.range(spec.size * 0.5, spec.size),
         color: this.rng.pick(spec.colors),
         shape: f.el.look.flair.shape ?? 'dot',
@@ -321,14 +411,6 @@ export class Flair {
           ctx.rotate(m.angle);
           ctx.fillRect(-s / 2, -s / 2, s, s);
           ctx.restore();
-          break;
-        }
-        case 'dust': {
-          // très diluée, et elle apparaît/disparaît en fondu
-          ctx.globalAlpha = 0.3 * Math.sin(Math.PI * (1 - t));
-          ctx.beginPath();
-          ctx.arc(m.x, m.y, m.size, 0, TAU);
-          ctx.fill();
           break;
         }
         default: {

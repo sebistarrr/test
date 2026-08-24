@@ -67,12 +67,17 @@ La seed du duel est affichée sous le vainqueur : elle suffit à le refaire joue
 plus tard avec `?seed=`.
 
 Chaque élément a sa **signature à l'écran** (`look.flair`) : ruban de couleur
-derrière la pointe de l'arme, poussière d'ambiance qui remplit l'arène, gerbe
-d'impact et éclat d'incantation à ses teintes. S'y ajoutent les **nombres de
-dégâts** qui s'envolent à chaque touche, la **convergence de matière** dès 85 %
-de jauge d'ultime, et le **cerclage rouge pulsé** sous 25 PV. Tout cela vit dans
-`src/render/flair.js`, avec son propre aléa : la mise en scène ne peut pas
-déplacer une virgule de l'équilibrage.
+derrière la pointe de l'arme, nappe de sol à ses teintes, frémissement collé au
+corps, gerbe d'impact et éclat d'incantation. S'y ajoutent les **nombres de
+dégâts** qui s'envolent à chaque touche, les **ondes qui courent le long des
+murs** à chaque rebond, le **sillage** derrière une boule projetée, la
+**convergence de matière** dès 85 % de jauge d'ultime et le **cerclage rouge
+pulsé** sous 25 PV.
+
+Tout cela suit une règle de composition : **rien ne se pose entre le spectateur
+et les combattants**. Ce qui remplit le cadre est au fond, sur les bords, ou
+derrière la boule. Tout vit dans `src/render/flair.js`, avec son propre aléa :
+la mise en scène ne peut pas déplacer une virgule de l'équilibrage.
 
 Le duel se termine par **une seconde de parade** : le perdant quitte l'arène, le
 vainqueur glisse au centre, grandit, son arme s'emballe et il pousse des anneaux
@@ -109,7 +114,7 @@ src/
 │   ├── hud.js             jauges d'ultime + ligne de stat
 │   ├── recorder.js        film du duel → vidéo verticale 1080x1920 (Shorts)
 │   ├── effects.js         particules de jeu (étincelles, neige, fantômes)
-│   ├── flair.js           mise en scène : rubans d'arme, nombres, poussière
+│   ├── flair.js           mise en scène : rubans, nappes, ondes de mur, nombres
 │   └── text.js            texte ajusté pour ne jamais déborder du HUD
 ├── game/
 │   ├── match.js           machine à états du duel + dégâts + rendu global
