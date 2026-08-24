@@ -87,6 +87,8 @@ export class Fighter {
     this.state = {}; // bac à sable pour les modules de pouvoirs
     /** @type {((ctx:CanvasRenderingContext2D)=>void)|null} */
     this.customWeapon = null;
+    /** Suivi de l'incantation d'ultime, pour la mise en scène (rendu seul). */
+    this.wasUlting = false;
   }
 
   get radius() {

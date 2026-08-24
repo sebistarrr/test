@@ -19,6 +19,7 @@ import { Projectiles } from './projectiles.js';
 import { abilitiesFor } from './abilities/index.js';
 import { resolveBodies, weaponHit } from './physics.js';
 import { Effects } from '../render/effects.js';
+import { Flair } from '../render/flair.js';
 import { createRng } from '../core/rng.js';
 import { buildBackdrop, drawBackdrop } from '../render/scene.js';
 import { drawFighterHud } from '../render/hud.js';
@@ -45,6 +46,9 @@ export class Match {
     this.onEnd = onEnd;
 
     this.fx = new Effects(rng);
+    // Mise en scène : banc de particules et aléa **séparés**, pilotés par
+    // viewRng. Rien de ce qu'elle fait ne peut décaler la simulation.
+    this.flair = new Flair(this.viewRng);
     this.projectiles = new Projectiles(this.fx);
 
     this.a = new Fighter(elA, 0, rng);
@@ -64,6 +68,7 @@ export class Match {
       if (mod.drawWeapon) f.customWeapon = (ctx) => mod.drawWeapon(ctx, f);
     }
 
+    this.flair.attach(this.fighters);
     this.backdrop = buildBackdrop({ a: elA, b: elB, lang });
 
     this.phase = 'intro';
@@ -158,6 +163,14 @@ export class Match {
       if (onHit.dot) target.applyDot({ ...onHit.dot, source }, this.time);
     });
     this.fx.update(dt);
+    // incantation d'ultime : détectée ici plutôt que dans les huit modules —
+    // le moteur n'a pas besoin de savoir ce que fait l'ultime pour l'annoncer
+    for (const f of this.fighters) {
+      const on = f.ult.active > 0;
+      if (on && !f.wasUlting) this.flair.cast(f, f.el.look.flair?.castFlash);
+      f.wasUlting = on;
+    }
+    this.flair.update(dtRaw, this.fighters, this.phase === 'fight');
 
     if (this.phase === 'fight') this.stats.duration = this.time;
   }
@@ -290,6 +303,9 @@ export class Match {
       });
       this.shake(opts.kind === 'melee' ? 4 : 2, 0.18);
     }
+    // mise en scène : le nombre s'envole et la gerbe part aux couleurs de
+    // l'attaquant, quel que soit le canal de dégâts (y compris les silencieux)
+    this.flair.hit(opts.x ?? target.x, opts.y ?? target.y, amt, source, target);
 
     if (target.hp <= 0) this.knockout(target, source);
   }
@@ -465,6 +481,7 @@ export class Match {
     if (this.phase !== 'victory') {
       for (const [f, mod] of this.modules) mod.drawUnder(ctx, f, this, this.time);
     }
+    this.flair.drawUnder(ctx, this.fighters);
     ctx.restore();
 
     // passe **hors arène** : certains effets débordent volontairement du cadre
@@ -490,10 +507,13 @@ export class Match {
     if (this.phase !== 'victory') {
       for (const [f, mod] of this.modules) mod.drawOver(ctx, f, this, this.time);
     }
+    if (this.phase === 'fight') this.flair.drawDanger(ctx, this.fighters, this.time);
     if (this.debug) {
       for (const f of this.fighters) f.drawDebug(ctx);
       this.projectiles.drawDebug(ctx);
     }
+    this.flair.drawFlash(ctx);
+    this.flair.drawPops(ctx);
     ctx.restore();
 
     // effets non clippés (onde de choc du Blizzard qui déborde de l'arène)

@@ -21,6 +21,7 @@ Va droit au fichier concerné, en `grep` ciblé plutôt qu'en lecture intégrale
 | Déroulé du duel, dégâts, rendu global | `src/game/match.js` |
 | Entité combattant (état + dessin) | `src/game/fighter.js` |
 | Pouvoirs d'un élément | `src/game/abilities/<id>.js` |
+| Mise en scène (rubans, nombres, poussière) | `src/render/flair.js` + `look.flair` de chaque fiche |
 | Écrans DOM | `src/ui/select.js`, `src/ui/result.js`, `index.html`, `styles/style.css` |
 | Câblage, boucle, seed, enregistreur | `src/main.js` |
 | Relevés vidéo détaillés, par élément | `docs/FICHES.md` |
@@ -45,6 +46,9 @@ Huit éléments : `shadow ice fire water light lightning wind plant`.
    - `game.viewRng` = rendu seul (tremblement de caméra, gigue des arcs).
      Toute décoration passe par lui, ou par un hachage pur (`hash01` dans
      `plant.js`).
+   - `render/flair.js` est **la** porte d'entrée pour ajouter du spectacle :
+     aléa `viewRng`, banc de particules séparé, aucun accès à `game.rng`.
+     Y ajouter un effet ne peut pas casser l'équilibrage.
 3. **Équilibrage.** Chaque élément gagne 9 à 12 duels sur 21. Après **tout**
    changement, comparer la matrice (voir Outils) : un changement visuel doit
    la laisser **identique au fichier près**.
