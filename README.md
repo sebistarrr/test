@@ -121,6 +121,13 @@ src/
 └── ui/
     ├── select.js          écran de sélection (lit les fiches)
     └── result.js          écran de fin
+tools/                     outillage de vérification (non chargé par la page)
+├── matrix.mjs             36 affrontements x 3 seeds, sans rendu
+├── matrix-reference.txt   sortie de référence, à differ après tout changement
+├── shot.mjs               captures d'écran, avec déclenchement de pouvoir
+├── frames.py              extraction d'images d'une vidéo de référence
+├── montage.py             planche-contact des images extraites
+└── crop.py                recadrage/zoom pour mesurer au pixel
 ```
 
 ### Pourquoi ce découpage
@@ -219,6 +226,9 @@ pilotés par les données.
 
 ## Documentation
 
+- [`CLAUDE.md`](CLAUDE.md) — mémoire du projet : carte des fichiers,
+  invariants (déterminisme, fiches gelées, matrice d'équilibrage), outils et
+  pièges déjà rencontrés. C'est le point d'entrée pour reprendre le travail.
 - [`docs/FICHES.md`](docs/FICHES.md) — fiches complètes des deux éléments
   (apparence, vitesse, pouvoirs, projectiles) et méthode de mesure.
 - [`assets/sprites/README.md`](assets/sprites/README.md) — remplacer les
